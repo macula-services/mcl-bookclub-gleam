@@ -8,7 +8,7 @@
 # image .github/workflows/ci.yml tests in. The runner is macula-pq-runtime
 # from the same build (same Debian trixie date, so glibc and OpenSSL 3.5
 # match the builder's). Move all pins together.
-ARG BUILDER_IMAGE="ghcr.io/macula-io/macula-ci-gleam:gleam118-latest"
+ARG BUILDER_IMAGE="ghcr.io/macula-io/macula-ci-gleam:gleam118-20260925-1402@sha256:4a177d3012dea97fb310a6f037197b4cc4ef1e38dc96f1bf246b57585e913b67"
 ARG RUNNER_IMAGE="ghcr.io/macula-io/macula-pq-runtime:20260923-1444@sha256:15a5501b7277804c5a62c93121d157773d1401d238a1bf630ef4b50fc2f1df09"
 
 # =============================================================================

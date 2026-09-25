@@ -51,7 +51,7 @@ jobs:
     # Containerfile's builder, so the gates run on exactly the toolchain the
     # release ships with.
     container:
-      image: ghcr.io/macula-io/macula-ci-gleam:gleam118-latest
+      image: ghcr.io/macula-io/macula-ci-gleam:gleam118-20260925-1402@sha256:4a177d3012dea97fb310a6f037197b4cc4ef1e38dc96f1bf246b57585e913b67
 
     env:
       MACULA_FORCE_SOURCE_BUILD: "1"
