@@ -17,6 +17,7 @@ repository = { type = "github", user = "macula-services", repo = "mcl-bookclub-g
 [dependencies]
 gleam_stdlib = ">= 1.0.0 and < 2.0.0"
 gleam_otp = ">= 1.0.0 and < 2.0.0"
+gleam_erlang = ">= 1.0.0 and < 2.0.0"
 # The shared L2 substrate: mesh SDK, realm identity, capabilities, health, and
 # the reckon-db store mcl_om:boot/1 opens for a service exporting store_id/0 +
 # data_dir/0.
