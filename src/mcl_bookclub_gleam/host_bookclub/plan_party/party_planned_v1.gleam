@@ -8,7 +8,7 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/mesh
+import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 
 pub type PartyPlanned {
@@ -31,7 +31,7 @@ pub fn new(params: Payload) -> Result(PartyPlanned, dynamic.Dynamic) {
       Ok(PartyPlanned(
         club_id: club_id,
         parties_planned: parties_planned,
-        planned_at: mesh.now_ms(mesh.millisecond()),
+        planned_at: ids.now_ms(ids.millisecond()),
       ))
     _, _ -> Error(desk.missing_required_fields())
   }

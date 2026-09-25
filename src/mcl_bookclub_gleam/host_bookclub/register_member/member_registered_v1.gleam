@@ -7,7 +7,7 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/mesh
+import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 
 pub type MemberRegistered {
@@ -37,7 +37,7 @@ pub fn new(params: Payload) -> Result(MemberRegistered, dynamic.Dynamic) {
         club_id: club_id,
         name: name,
         club_name: desk.get_string_default(params, "club_name", ""),
-        registered_at: mesh.now_ms(mesh.millisecond()),
+        registered_at: ids.now_ms(ids.millisecond()),
       ))
     _, _, _ -> Error(desk.missing_required_fields())
   }

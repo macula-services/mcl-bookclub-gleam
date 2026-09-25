@@ -8,7 +8,7 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/mesh
+import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 
 pub type BookRetired {
@@ -46,7 +46,7 @@ pub fn new(params: Payload) -> Result(BookRetired, dynamic.Dynamic) {
         procured_at: desk.get_int_default(params, "procured_at", 0),
         club_name: desk.get_string_default(params, "club_name", ""),
         retired_by: retired_by,
-        retired_at: mesh.now_ms(mesh.millisecond()),
+        retired_at: ids.now_ms(ids.millisecond()),
       ))
     _, _, _, _, _ -> Error(desk.missing_required_fields())
   }

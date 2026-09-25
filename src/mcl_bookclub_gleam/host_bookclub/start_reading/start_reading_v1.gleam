@@ -9,7 +9,7 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/mesh
+import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 
 pub type StartReading {
@@ -31,7 +31,7 @@ pub fn command_type() -> dynamic.Dynamic {
 /// and this derived id is what the command is addressed to. Never
 /// hand-roll the suffix; reckon_gater_stream_id:new/1 mints the contract.
 pub fn mint_reading_id() -> String {
-  mesh.mint_stream_id("reading")
+  ids.mint_stream_id("reading")
 }
 
 /// The command's payload: the reading, the member, and the book -- all

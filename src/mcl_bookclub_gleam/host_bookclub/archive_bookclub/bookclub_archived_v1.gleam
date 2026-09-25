@@ -11,7 +11,7 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/mesh
+import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 
 pub type BookclubArchived {
@@ -44,7 +44,7 @@ pub fn new(params: Payload) -> Result(BookclubArchived, dynamic.Dynamic) {
         initiated_by: initiated_by,
         initiated_at: desk.get_int_default(params, "initiated_at", 0),
         archived_by: archived_by,
-        archived_at: mesh.now_ms(mesh.millisecond()),
+        archived_at: ids.now_ms(ids.millisecond()),
       ))
     _, _, _, _ -> Error(desk.missing_required_fields())
   }

@@ -10,7 +10,7 @@ import gleam/dict
 import gleam/dynamic
 import gleam/dynamic/decode
 import mcl_bookclub_gleam/internal/evoq
-import mcl_bookclub_gleam/internal/mesh
+import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 
 /// What the aggregate's execute/2 and the maybe_ modules return: the
@@ -26,7 +26,7 @@ pub type DispatchResult =
 
 /// The one metadata key every dispatch carries: the command timestamp.
 pub fn command_metadata() -> Payload {
-  dict.from_list([#(atom("timestamp"), dynamic.int(mesh.now_ms(mesh.millisecond())))])
+  dict.from_list([#(atom("timestamp"), dynamic.int(ids.now_ms(ids.millisecond())))])
 }
 
 /// The dispatch every desk performs: build the evoq command, dispatch it
@@ -185,7 +185,7 @@ pub fn validate_stream_ids(ids: List(String)) -> Result(Nil, dynamic.Dynamic) {
   case ids {
     [] -> Ok(Nil)
     [id, ..rest] ->
-      case mesh.validate_stream_id(id) {
+      case ids.validate_stream_id(id) {
         Ok(_) -> validate_stream_ids(rest)
         Error(reason) -> Error(reason)
       }

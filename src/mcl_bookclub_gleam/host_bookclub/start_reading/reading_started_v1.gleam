@@ -7,7 +7,7 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/mesh
+import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 
 pub type ReadingStarted {
@@ -35,7 +35,7 @@ pub fn new(params: Payload) -> Result(ReadingStarted, dynamic.Dynamic) {
         reading_id: reading_id,
         member_id: member_id,
         book_id: book_id,
-        started_at: mesh.now_ms(mesh.millisecond()),
+        started_at: ids.now_ms(ids.millisecond()),
       ))
     _, _, _ -> Error(desk.missing_required_fields())
   }

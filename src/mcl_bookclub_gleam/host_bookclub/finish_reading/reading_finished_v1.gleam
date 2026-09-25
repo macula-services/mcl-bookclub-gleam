@@ -9,7 +9,7 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/mesh
+import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 
 pub type ReadingFinished {
@@ -41,7 +41,7 @@ pub fn new(params: Payload) -> Result(ReadingFinished, dynamic.Dynamic) {
         book_id: book_id,
         started_at: desk.get_int_default(params, "started_at", 0),
         pages_read: desk.get_int_default(params, "pages_read", 0),
-        finished_at: mesh.now_ms(mesh.millisecond()),
+        finished_at: ids.now_ms(ids.millisecond()),
       ))
     _, _, _ -> Error(desk.missing_required_fields())
   }

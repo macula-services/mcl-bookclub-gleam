@@ -134,10 +134,11 @@ fn decode(body: String) -> Payload {
 
 ///====================================================================
 /// The dispatch table: one route per desk, through the desk's own entry
-/// point.
+/// point. Public for the admin tests, which call it directly with
+/// fabricated requests instead of standing up a listener.
 ///====================================================================
 
-fn dispatch(method: String, path: List(String), params: Payload) -> #(Int, dynamic.Dynamic) {
+pub fn dispatch(method: String, path: List(String), params: Payload) -> #(Int, dynamic.Dynamic) {
   case method, path {
     "POST", ["clubs", "initiate"] -> result(initiate_bookclub_api.handle(params))
     "POST", ["clubs", "archive"] -> result(archive_bookclub_api.handle(params))

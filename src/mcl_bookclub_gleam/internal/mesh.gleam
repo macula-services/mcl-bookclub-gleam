@@ -1,13 +1,14 @@
-//// The mesh edge: mcl_om boot, the wire reader, macula publish, fact
-//// topics, and the reckon-db stream-id contract.
+//// The mesh edge: mcl_om boot, the wire reader, macula publish, and fact
+//// topics.
 ////
 //// The ONLY modules in this package that may name the mesh SDK are the
 //// facade's own modules (facts, handler, emitters); everything here is a
 //// thin binding, and the division boundary test keeps the SDK out of
-//// host/project/query.
+//// host/project/query. The stream-id contract and the clock live in
+//// internal/ids -- the divisions may import those.
 
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload}
 
 /// mcl_om:boot/1 -- the one-call lifecycle wiring: mesh pool, realm
 /// identity, health registration, and (because the service exports
@@ -51,20 +52,3 @@ pub fn field(key: dynamic.Dynamic, payload: Payload) -> dynamic.Dynamic
 
 @external(erlang, "mcl_om_wire", "unwrap")
 pub fn unwrap(value: dynamic.Dynamic) -> dynamic.Dynamic
-
-/// reckon_gater_stream_id: the reckon-db stream id contract. new/1 mints an
-/// id with a prefix; validate/1 is the check every desk runs BEFORE
-/// dispatch, because a bad stream id RAISES in the store client (Demon 67).
-@external(erlang, "reckon_gater_stream_id", "new")
-pub fn mint_stream_id(prefix: String) -> String
-
-@external(erlang, "mcl_bookclub_gleam_ffi", "validate_stream_id")
-pub fn validate_stream_id(id: String) -> Result(Nil, dynamic.Dynamic)
-
-/// The system clock, for event timestamps (milliseconds, like the twins).
-@external(erlang, "erlang", "system_time")
-pub fn now_ms(unit: dynamic.Dynamic) -> Int
-
-pub fn millisecond() -> dynamic.Dynamic {
-  atom("millisecond")
-}
