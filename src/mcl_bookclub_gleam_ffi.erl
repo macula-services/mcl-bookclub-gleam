@@ -15,11 +15,16 @@
 -export([decode_atoms/1]).
 -export([read_body/1]).
 -export([sqlite_q/3, sqlite_exec/3]).
+-export([sqlite_open/1]).
 -export([safe_ping/2, send_reply/2]).
 -export([wrap/1]).
 -export([logger_warning/1]).
 -export([bin_to_list/1]).
 -export([validate_stream_id/1]).
+-export([getenv/1]).
+-export([ensure_dir/1]).
+-export([exact_name/1]).
+-export([publish/4]).
 -export([test_set_evoq_env/1, test_ensure_store/2, test_start_subscription/1,
          test_read_stream/2, test_source_files/1, file_read/1]).
 
@@ -60,6 +65,10 @@ read_body(Req) ->
         {more, _, Req1} -> {ok, {<<>>, Req1}}
     end.
 
+%%% esqlite3:open/1 REJECTS a binary path (the NIF wants a charlist).
+sqlite_open(Path) ->
+    esqlite3:open(binary_to_list(Path)).
+
 %%% esqlite3:q/3 returns a bare list of rows or {error, Reason}. Wrapped so
 %%% Gleam sees {ok, Rows} | {error, Reason}.
 sqlite_q(Conn, Sql, Args) ->
@@ -68,12 +77,12 @@ sqlite_q(Conn, Sql, Args) ->
         Rows -> {ok, Rows}
     end.
 
-%%% A single parameterised write: ok, or {error, Reason}. Mirrors the
-%%% twins' do_exec: zero rows means the statement ran; a statement that
-%%% returned rows is a bug to surface, not to swallow.
+%%% A single parameterised write: {ok, nil}, or {error, Reason}. Mirrors
+%%% the twins' do_exec: zero rows means the statement ran; a statement
+%%% that returned rows is a bug to surface, not to swallow.
 sqlite_exec(Conn, Sql, Args) ->
     case esqlite3:q(Conn, Sql, Args) of
-        [] -> ok;
+        [] -> {ok, nil};
         {error, _} = Error -> Error;
         Rows -> {error, {unexpected_rows, Rows}}
     end.
@@ -83,17 +92,19 @@ sqlite_exec(Conn, Sql, Args) ->
 %%%   {ok, Reply} | {error, missing} | {error, {down, Reason}} | {error, timeout}
 %%% The twin's stores answer `ping' with the atom ok; gleam_otp actors are
 %%% not gen_servers, so this is the actor-shaped equivalent of the twins'
-%%% try gen_server:call catch exit:_ -> missing end. The message shape
-%%% {ping, {Pid, Ref}} is the runtime encoding of the stores' Gleam
-%%% `Ping(reply_to: #(Pid, Ref))' variant -- the selector matches it, and
-%%% the handler answers through send_reply/2.
+%%% try gen_server:call catch exit:_ -> missing end. gleam actors receive
+%%% through their SUBJECT channel: a named actor's subject envelope is
+%%% {Name, Message}, so the ping goes as {Name, {ping, {Pid, Ref}}} -- the
+%%% runtime encoding of the stores' `Ping(reply_to: #(Pid, Ref))' variant.
+%%% The handler answers through send_reply/2 on the raw {Ref, Reply}
+%%% channel this function selects on.
 safe_ping(Name, Timeout) ->
     case whereis(Name) of
         undefined ->
             {error, missing};
         Pid ->
             Ref = erlang:monitor(process, Pid),
-            Pid ! {ping, {self(), Ref}},
+            Pid ! {Name, {ping, {self(), Ref}}},
             receive
                 {'DOWN', Ref, process, Pid, Reason} ->
                     {error, {down, Reason}};
@@ -128,6 +139,37 @@ bin_to_list(Bin) ->
 %%% Gleam's Result cannot carry. Reshaped to {ok, nil} | {error, Reason}.
 validate_stream_id(Id) ->
     case reckon_gater_stream_id:validate(Id) of
+        ok -> {ok, nil};
+        {error, Reason} -> {error, Reason}
+    end.
+
+%%% os:getenv, shaped for Gleam: a binary in, {ok, Binary} out -- the
+%%% Erlang side wants a charlist and returns a charlist (or the false
+%%% atom when unset).
+getenv(Name) ->
+    case os:getenv(binary_to_list(Name)) of
+        false -> {error, false};
+        Value -> {ok, list_to_binary(Value)}
+    end.
+
+%%% filelib:ensure_dir/1 returns a bare `ok' atom. Reshaped.
+ensure_dir(Path) ->
+    case filelib:ensure_dir(Path) of
+        ok -> {ok, nil};
+        {error, Reason} -> {error, Reason}
+    end.
+
+%%% The EXACT registered-name atom: gleam_erlang's process.new_name/1
+%%% always appends a unique suffix, which makes a fixed-name registration
+%%% (the stores' health-ping names) impossible. process.Name's runtime
+%%% representation is a plain atom, so this is the right shape for
+%%% actor.named/2 and process.named_subject/1.
+exact_name(Bin) ->
+    binary_to_atom(Bin, utf8).
+
+%%% macula:publish/4 returns a bare `ok' atom. Reshaped to {ok, nil}.
+publish(Pool, Realm, Topic, Fact) ->
+    case macula:publish(Pool, Realm, Topic, Fact) of
         ok -> {ok, nil};
         {error, Reason} -> {error, Reason}
     end.

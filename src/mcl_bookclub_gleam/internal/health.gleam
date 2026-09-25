@@ -12,6 +12,14 @@ import gleam/dynamic
 import gleam/erlang/process
 import mcl_bookclub_gleam/internal/payload
 
+/// The EXACT registered-name atom: gleam_erlang's process.new_name/1
+/// always appends a unique suffix, which makes a fixed-name registration
+/// (the stores' health-ping names) impossible. process.Name's runtime
+/// representation is a plain atom, so this is the right shape for
+/// actor.named/2 and process.named_subject/1.
+@external(erlang, "mcl_bookclub_gleam_ffi", "exact_name")
+pub fn exact_name(name: String) -> process.Name(a)
+
 /// {ok, Reply} | {error, missing} | {error, {down, Reason}} | {error, timeout}.
 /// `name` must be an atom (payload.atom/1 of the registered actor name).
 @external(erlang, "mcl_bookclub_gleam_ffi", "safe_ping")

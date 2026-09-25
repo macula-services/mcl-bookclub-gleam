@@ -1,0 +1,87 @@
+%% -*- mode: erlang -*-
+%% Scaffold a complete mcl service: OTP release, container image, CI, and a
+%% deployable compose file.
+%%
+%% THIS EXISTS SO A NEW SERVICE STARTS DEPLOYABLE RATHER THAN STARTING EMPTY.
+%% The dull half of a service (release packaging, image, CI, health wiring, the
+%% six-callback contract) is the half that is tedious to retrofit and easy to get
+%% subtly wrong. Generating it means the first commit of a new service already
+%% builds, already passes its own tests, and already has somewhere to run.
+%%
+%% IT GENERATES NO TODO AND NO STUB. What it emits is honestly complete and
+%% empty: the supervisor has no children, the service announces no capability and
+%% requests no authority. Those are correct answers for a service that does
+%% nothing yet, and each one is asserted by a generated test, so filling them in
+%% is a deliberate act that breaks a test rather than a comment someone forgets.
+%%
+%% TWO NAMES, DELIBERATELY, because they differ and the difference is load
+%% bearing. `name' is the OTP application and every module prefix, so it must be
+%% a valid Erlang atom in snake_case. `repo' is the git repository, the container
+%% image and the name this service answers to on the mesh, and the house
+%% convention there is kebab-case. A generated test asserts the two agree modulo
+%% the separator, so a mismatched pair fails the first time eunit runs rather
+%% than shipping a service whose image and application disagree.
+%%
+%% Usage, from the directory that will hold the new repository:
+%%
+%%   rebar3 new mcl_service repo=mcl-foo name=mcl_foo \
+%%       desc="Does X over the mesh" health_port=8484
+
+{description, "A complete mcl service: release, container, CI, compose, and the six-callback mcl_om_service contract"}.
+
+{variables, [
+    {repo, "mcl-newservice",
+     "Repository, container image and mesh-facing name. KEBAB-case."},
+    {name, "mcl_newservice",
+     "OTP application and module prefix. SNAKE_case, must be a valid Erlang atom, and must match `repo' modulo the separator."},
+    {desc, "Does something over the mesh",
+     "One line describing what the service does. Ends up in info/0, the app.src and the README."},
+    {org, "macula-services",
+     "Your source-forge organisation or user. Owns the repository URL and the container image namespace. CHANGE THIS if you are not building for the BEAM Campus fleet."},
+    {registry, "ghcr.io",
+     "Container registry the image is pushed to. ghcr.io pairs with a GitHub org; set it to whatever you publish to."},
+    {health_port, "8484",
+     "Port for the /health endpoint. The container uses host networking, because macula stations are AAAA-only and a default bridge cannot reach them, so a port already bound on the host fails SILENTLY. Pick one you know is free."},
+    {store, "",
+     "OFF BY DEFAULT. Empty means no store, which is what most services want. Set it to 1 and the service opens a reckon-db store called <name>_store: store_id/0 and data_dir/0 are generated, sys.config gains the evoq adapter block without which the node will not boot, the compose file gains a volume, and three boundary guards are generated to keep them in step. WARNING: the value must be EXACTLY ONE CHARACTER, so 1 and not yes. rebar3 passes template variables as strings and mustache iterates a string as a list, so a longer value repeats every generated block once per character and the result does not compile. That is a limitation of the template engine, not a preference."}
+]}.
+
+%% Build
+{template, "mcl_service/rebar.config",       "{{repo}}/rebar.config"}.
+{template, "mcl_service/gitignore",          "{{repo}}/.gitignore"}.
+%% Pinned to the SAME OTP major (28) Containerfile and lint.yml pin below.
+%% Without this, a dev machine whose asdf/rebar3 global points at a newer
+%% OTP (29, in the four repos that hit this in one day) compiles a dependency's deprecated bare
+%% `catch' syntax under a version that turns it into a hard build failure
+%% via `warnings_as_errors' -- a failure that has nothing to do with the
+%% generated service's own code, and reproduces nowhere the pin is honored
+%% (CI, the container build, or a machine using this file).
+{template, "mcl_service/tool-versions",      "{{repo}}/.tool-versions"}.
+
+%% The application
+{template, "mcl_service/app.src",            "{{repo}}/apps/{{name}}/src/{{name}}.app.src"}.
+{template, "mcl_service/app.erl",            "{{repo}}/apps/{{name}}/src/{{name}}_app.erl"}.
+{template, "mcl_service/sup.erl",            "{{repo}}/apps/{{name}}/src/{{name}}_sup.erl"}.
+{template, "mcl_service/service.erl",        "{{repo}}/apps/{{name}}/src/{{name}}_service.erl"}.
+{template, "mcl_service/service_tests.erl",  "{{repo}}/apps/{{name}}/test/{{name}}_service_tests.erl"}.
+
+%% Release configuration
+{template, "mcl_service/sys.config.src",     "{{repo}}/config/sys.config.src"}.
+{template, "mcl_service/vm.args.src",        "{{repo}}/config/vm.args.src"}.
+
+%% Image, CI and deployment
+{template, "mcl_service/Containerfile",      "{{repo}}/Containerfile"}.
+{template, "mcl_service/build-push.yml",     "{{repo}}/.github/workflows/build-push.yml"}.
+{template, "mcl_service/lint.yml",           "{{repo}}/.github/workflows/lint.yml"}.
+{template, "mcl_service/compose.yml",        "{{repo}}/deploy/docker-compose.yml"}.
+
+%% Scripts
+{template, "mcl_service/health.sh",          "{{repo}}/scripts/health.sh"}.
+{chmod,                                         "{{repo}}/scripts/health.sh", 8#755}.
+{template, "mcl_service/is_image_push.sh",    "{{repo}}/scripts/is_image_push.sh"}.
+{chmod,                                         "{{repo}}/scripts/is_image_push.sh", 8#755}.
+
+%% Documentation
+{template, "mcl_service/README.md",          "{{repo}}/README.md"}.
+{template, "mcl_service/CHANGELOG.md",       "{{repo}}/CHANGELOG.md"}.
+{template, "mcl_service/LICENSE",            "{{repo}}/LICENSE"}.

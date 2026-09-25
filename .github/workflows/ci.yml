@@ -1,0 +1,126 @@
+name: ci
+
+# The tests gate the image. A push to main or a v* tag builds and pushes the
+# image only after the test job passed. Pull requests run the tests only.
+#
+#   push to main : ghcr.io/macula-services/mcl-bookclub-gleam:main and :<sha>
+#   push of v*   : ghcr.io/macula-services/mcl-bookclub-gleam:<X.Y.Z>
+#
+# NO :latest. Boxes run a PINNED image (digest or semver) from macula-fleet and
+# roll it through the reconciler, canary first; nothing here moves a box.
+#
+# This org does not commit lock files (manifest.toml is git-ignored): the
+# `~>` floors in gleam.toml ARE the pin, and a rebuild picks up the newest
+# hex -- which is why there is no tested-resolve artifact step, unlike the
+# Phoenix workflow's mix.lock handover.
+#
+# PATH FILTERS. A docs-only change must not rebuild or re-push an image. Keep
+# this list to things that cannot change what the image contains.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push cancels an older run, image build included, so an older
+# commit's image never lands after a newer one's.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: gates (OTP 28.4.3 / Gleam 1.18.1)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    # THE TOOLCHAIN IS THE IMAGE, and the same image by digest is the
+    # Containerfile's builder, so the gates run on exactly the toolchain the
+    # release ships with.
+    container:
+      image: ghcr.io/macula-io/macula-ci-gleam:gleam118-latest
+
+    env:
+      MACULA_FORCE_SOURCE_BUILD: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify the toolchain
+        run: |
+          erl -noshell -eval 'io:format("OTP ~s~n",[erlang:system_info(otp_release)]),halt().'
+          gleam --version
+          erl -noshell -eval '
+            case lists:member(mldsa87, crypto:supports(public_keys)) of
+                true  -> io:format("mldsa87 supported~n"), halt(0);
+                false -> io:format("mldsa87 MISSING~n"), halt(1)
+            end.'
+
+      - name: Format check
+        run: gleam format --check .
+
+      - name: Tests
+        run: scripts/test.sh
+
+  image:
+    name: image (amd64)
+    needs: test
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE_NAME: ghcr.io/macula-services/mcl-bookclub-gleam
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,prefix=,format=long,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+          flavor: |
+            latest=false
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Containerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          build-args: |
+            CACHE_BUST=${{ github.sha }}
+            GIT_SHA=${{ github.sha }}

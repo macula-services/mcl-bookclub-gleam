@@ -97,7 +97,7 @@ pub fn start(
 ) -> Result(actor.Started(process.Subject(Message)), actor.StartError) {
   actor.new_with_initialiser(10_000, fn(subject) { init_store(sqlite_path, subject) })
   |> actor.on_message(handle_message)
-  |> actor.named(process.new_name("bookclub_read_model_store"))
+  |> actor.named(health.exact_name("bookclub_read_model_store"))
   |> actor.start
 }
 
@@ -149,7 +149,7 @@ fn handle_message(state: State, message: Message) -> actor.Next(State, Message) 
 
 /// The caller-side subject: resolves the registered name at send time.
 pub fn subject() -> process.Subject(Message) {
-  process.named_subject(process.new_name("bookclub_read_model_store"))
+  process.named_subject(health.exact_name("bookclub_read_model_store"))
 }
 
 /// One parameterised write through the store actor. A projection turns an

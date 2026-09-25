@@ -23,8 +23,9 @@ pub fn boot(service_module: dynamic.Dynamic) -> Result(dynamic.Dynamic, dynamic.
 @external(erlang, "mcl_bookclub_gleam_ffi", "mesh_handles")
 pub fn mesh_handles() -> Result(#(dynamic.Dynamic, dynamic.Dynamic), dynamic.Dynamic)
 
-/// macula:publish/4 -- the fact leaves on the pool's link. ok | {error, _}.
-@external(erlang, "macula", "publish")
+/// macula:publish/4 -- the fact leaves on the pool's link, reshaped by
+/// the FFI (the Erlang side returns a bare `ok' atom).
+@external(erlang, "mcl_bookclub_gleam_ffi", "publish")
 pub fn publish(
   pool: dynamic.Dynamic,
   realm: dynamic.Dynamic,

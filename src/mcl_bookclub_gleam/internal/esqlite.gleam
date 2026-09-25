@@ -7,12 +7,14 @@
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/payload.{atom}
 
-/// esqlite3:open/1 -- {ok, Conn} | {error, Reason}.
-@external(erlang, "esqlite3", "open")
+/// esqlite3:open/1 -- {ok, Conn} | {error, Reason}. Reshaped by the FFI:
+/// the NIF rejects a binary path and wants a charlist.
+@external(erlang, "mcl_bookclub_gleam_ffi", "sqlite_open")
 pub fn open(path: String) -> Result(dynamic.Dynamic, dynamic.Dynamic)
 
 /// filelib:ensure_dir/1 -- make the sqlite file's directory exist.
-@external(erlang, "filelib", "ensure_dir")
+/// Reshaped by the FFI (the Erlang side returns a bare `ok' atom).
+@external(erlang, "mcl_bookclub_gleam_ffi", "ensure_dir")
 pub fn ensure_dir(path: String) -> Result(Nil, dynamic.Dynamic)
 
 /// One parameterised query, reshaped by the FFI: {ok, Rows} | {error, _}.

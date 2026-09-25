@@ -6,8 +6,9 @@
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/payload.{atom, wrap}
 
-/// os:getenv -- false (the atom) when unset.
-@external(erlang, "os", "getenv")
+/// os:getenv -- shaped by the FFI (a binary in, {ok, Binary} out; the
+/// false atom arrives as Error(false)).
+@external(erlang, "mcl_bookclub_gleam_ffi", "getenv")
 pub fn getenv(name: String) -> Result(String, dynamic.Dynamic)
 
 /// The data dir as a binary path, with the twins' default.

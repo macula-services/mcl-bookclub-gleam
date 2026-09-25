@@ -1,0 +1,10 @@
+{application,gen_batch_server,
+             [{description,"Generic batching server"},
+              {licenses,["Apache-2.0","MPL-2.0"]},
+              {links,[{"github",
+                       "https://github.com/rabbitmq/gen-batch-server"}]},
+              {vsn,"0.8.9"},
+              {modules,[gen_batch_server]},
+              {registered,[]},
+              {applications,[kernel,stdlib]},
+              {env,[]}]}.
