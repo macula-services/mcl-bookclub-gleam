@@ -1,0 +1,6 @@
+build/
+manifest.toml
+erl_crash.dump
+
+# Test data directories written under the working directory.
+/data/

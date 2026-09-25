@@ -1,0 +1,39 @@
+name = "mcl_bookclub_gleam"
+version = "0.1.0"
+description = "The Bookclub-on-Mesh in Gleam: the third club on the mesh, drop-in twin of mcl-bookclub and mcl-bookclub-phoenix -- same org, topics and procedure names, distinguishable only by node identity."
+licences = ["Apache-2.0"]
+repository = { type = "github", user = "macula-services", repo = "mcl-bookclub-gleam" }
+
+# The division boundary lives in the folder layout (facade / host_bookclub /
+# project_bookclub / query_bookclub under src/mcl_bookclub_gleam) and is
+# enforced by tests, exactly as the Erlang twin does it -- see README.md.
+#
+# DEP FLOORS ARE THE PIN. This org does not commit lock files (manifest.toml is
+# git-ignored): the `~>` floors below ARE the pin, and a rebuild picks up the
+# newest compatible hex. The 0.29 floor on mcl_om is deliberate and
+# load-bearing: a build on 0.28 would name the same serving station as one of
+# the twins and be un-dialable (mcl-om#5, corpus Demon 69).
+
+[dependencies]
+gleam_stdlib = ">= 1.0.0 and < 2.0.0"
+gleam_otp = ">= 1.0.0 and < 2.0.0"
+# The shared L2 substrate: mesh SDK, realm identity, capabilities, health, and
+# the reckon-db store mcl_om:boot/1 opens for a service exporting store_id/0 +
+# data_dir/0.
+mcl_om = "~> 0.29"
+# The CQRS/ES framework. 1.24: a restart's replayed events are marked
+# (`replaying => true') and a handler declares its replay_policy.
+evoq = "~> 1.24"
+# The reckon-db adapter, chosen in config/sys.config.src.
+reckon_evoq = "~> 2.7"
+# The read model: a single sqlite file the PRJ division writes and the QRY
+# division reads.
+esqlite = "~> 0.9"
+# The LAN admin UI: cowboy serves the static page and the JSON API, jsx is
+# the codec. (Both ride the dependency tree via mcl_om already; named here
+# because this service uses them directly -- same as the Erlang twin.)
+cowboy = "2.12.0"
+jsx = "3.1.0"
+
+[dev_dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
