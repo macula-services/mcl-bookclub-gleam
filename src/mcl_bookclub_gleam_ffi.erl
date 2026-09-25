@@ -103,18 +103,26 @@ safe_ping(Name, Timeout) ->
         undefined ->
             {error, missing};
         Pid ->
-            Ref = erlang:monitor(process, Pid),
-            Pid ! {Name, {ping, {self(), Ref}}},
-            receive
-                {'DOWN', Ref, process, Pid, Reason} ->
-                    {error, {down, Reason}};
-                {Ref, Reply} ->
-                    erlang:demonitor(Ref, [flush]),
-                    {ok, Reply}
-            after Timeout ->
-                erlang:demonitor(Ref, [flush]),
-                {error, timeout}
-            end
+            ask_and_await(Pid, Name, Timeout)
+    end.
+
+%%% The ask half of safe_ping: monitor, send through the subject envelope,
+%%% and await the reply or the DOWN.
+ask_and_await(Pid, Name, Timeout) ->
+    Ref = erlang:monitor(process, Pid),
+    Pid ! {Name, {ping, {self(), Ref}}},
+    await_reply(Ref, Pid, Timeout).
+
+await_reply(Ref, Pid, Timeout) ->
+    receive
+        {'DOWN', Ref, process, Pid, Reason} ->
+            {error, {down, Reason}};
+        {Ref, Reply} ->
+            erlang:demonitor(Ref, [flush]),
+            {ok, Reply}
+    after Timeout ->
+        erlang:demonitor(Ref, [flush]),
+        {error, timeout}
     end.
 
 %%% The reply half of the safe_ping protocol: the store actor answers a
@@ -238,14 +246,14 @@ events({error, _} = Error) ->
 %%% boundary tests scan these for banned imports and status literals.
 test_source_files(Dir) ->
     {ok, Entries} = file:list_dir(Dir),
-    lists:flatmap(
-      fun(Entry) ->
-              Path = filename:join(Dir, Entry),
-              case filelib:is_dir(Path) of
-                  true -> test_source_files(Path);
-                  false -> [{Path, file:read_file(Path)}]
-              end
-      end, Entries).
+    lists:flatmap(fun(Entry) -> source_file(Dir, Entry) end, Entries).
+
+source_file(Dir, Entry) ->
+    Path = filename:join(Dir, Entry),
+    case filelib:is_dir(Path) of
+        true -> test_source_files(Path);
+        false -> [{Path, file:read_file(Path)}]
+    end.
 
 %%% file:read_file/1, shaped for Gleam.
 file_read(Path) ->

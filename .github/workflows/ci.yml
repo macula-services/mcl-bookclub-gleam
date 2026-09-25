@@ -72,6 +72,9 @@ jobs:
       - name: Format check
         run: gleam format --check .
 
+      - name: Lint (elvis mcl_min on the generated Erlang)
+        run: scripts/lint.sh
+
       - name: Tests
         run: scripts/test.sh
 

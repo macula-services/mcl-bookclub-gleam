@@ -34,13 +34,26 @@ pub fn execute(
   state: member_state.MemberState,
   payload: Payload,
 ) -> desk.DeskResult {
+  execute_not_register_member_v1(state, payload)
+}
+
+fn execute_not_register_member_v1(
+  state: member_state.MemberState,
+  payload: Payload,
+) -> desk.DeskResult {
   case desk.command_is(payload, "register_member_v1") {
     True -> guarded(state, payload, maybe_register_member.handle_from_map)
-    False ->
-      case desk.command_is(payload, "unregister_member_v1") {
-        True -> guarded(state, payload, maybe_unregister_member.handle_from_map)
-        False -> Error(desk.unknown_command())
-      }
+    False -> execute_not_unregister_member_v1(state, payload)
+  }
+}
+
+fn execute_not_unregister_member_v1(
+  state: member_state.MemberState,
+  payload: Payload,
+) -> desk.DeskResult {
+  case desk.command_is(payload, "unregister_member_v1") {
+    True -> guarded(state, payload, maybe_unregister_member.handle_from_map)
+    False -> Error(desk.unknown_command())
   }
 }
 

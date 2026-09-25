@@ -95,23 +95,32 @@ fn build(event: Payload, fields: List(String)) -> Payload {
 pub fn to_wire(value: dynamic.Dynamic) -> dynamic.Dynamic {
   case decode.run(value, decode.string) {
     Ok(binary) -> wrap(#(atom("text"), dynamic.string(binary)))
-    Error(_) ->
-      case decode.run(value, decode.bool) {
-        Ok(True) -> dynamic.int(1)
-        Ok(False) -> dynamic.int(0)
-        Error(_) ->
-          case decode.run(value, decode.list(decode.dynamic)) {
-            Ok(values) -> dynamic.list(list.map(values, to_wire))
-            Error(_) ->
-              case desk.decode_map(value) {
-                Ok(map) ->
-                  desk.payload_to_dynamic(
-                    dict.map_values(map, fn(_key, value) { to_wire(value) }),
-                  )
-                Error(_) -> value
-              }
-          }
-      }
+    Error(_) -> to_wire_not_string(value)
+  }
+}
+
+fn to_wire_not_string(value: dynamic.Dynamic) -> dynamic.Dynamic {
+  case decode.run(value, decode.bool) {
+    Ok(True) -> dynamic.int(1)
+    Ok(False) -> dynamic.int(0)
+    Error(_) -> to_wire_not_bool(value)
+  }
+}
+
+fn to_wire_not_bool(value: dynamic.Dynamic) -> dynamic.Dynamic {
+  case decode.run(value, decode.list(decode.dynamic)) {
+    Ok(values) -> dynamic.list(list.map(values, to_wire))
+    Error(_) -> to_wire_not_list(value)
+  }
+}
+
+fn to_wire_not_list(value: dynamic.Dynamic) -> dynamic.Dynamic {
+  case desk.decode_map(value) {
+    Ok(map) ->
+      desk.payload_to_dynamic(
+        dict.map_values(map, fn(_key, value) { to_wire(value) }),
+      )
+    Error(_) -> value
   }
 }
 

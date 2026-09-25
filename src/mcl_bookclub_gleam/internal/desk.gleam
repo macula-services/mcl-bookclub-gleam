@@ -60,11 +60,17 @@ pub fn get(
 ) -> Result(dynamic.Dynamic, dynamic.Dynamic) {
   case dict.get(payload, atom(key_name)) {
     Ok(value) -> Ok(value)
-    Error(_) ->
-      case dict.get(payload, dynamic.string(key_name)) {
-        Ok(value) -> Ok(value)
-        Error(_) -> Error(missing_required_fields())
-      }
+    Error(_) -> get_binary_key(payload, key_name)
+  }
+}
+
+fn get_binary_key(
+  payload: Payload,
+  key_name: String,
+) -> Result(dynamic.Dynamic, dynamic.Dynamic) {
+  case dict.get(payload, dynamic.string(key_name)) {
+    Ok(value) -> Ok(value)
+    Error(_) -> Error(missing_required_fields())
   }
 }
 

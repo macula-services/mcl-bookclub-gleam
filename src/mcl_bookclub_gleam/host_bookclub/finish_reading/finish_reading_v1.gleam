@@ -25,18 +25,23 @@ pub fn command_type() -> dynamic.Dynamic {
 /// a missing field is missing_required_fields, a bad value is
 /// invalid_params.
 pub fn new(params: Payload) -> Result(FinishReading, dynamic.Dynamic) {
-  case desk.get_string(params, "reading_id") {
-    Ok(reading_id) ->
-      case desk.get_int(params, "pages_read") {
-        Ok(pages_read) ->
-          case reading_id != "" && pages_read >= 0 {
-            True ->
-              Ok(FinishReading(reading_id: reading_id, pages_read: pages_read))
-            False -> Error(desk.invalid_params())
-          }
-        Error(e) -> Error(e)
-      }
-    Error(e) -> Error(e)
+  case
+    desk.get_string(params, "reading_id"),
+    desk.get_int(params, "pages_read")
+  {
+    Ok(reading_id), Ok(pages_read) -> new_valid(reading_id, pages_read)
+    Error(e), _ -> Error(e)
+    _, Error(e) -> Error(e)
+  }
+}
+
+fn new_valid(
+  reading_id: String,
+  pages_read: Int,
+) -> Result(FinishReading, dynamic.Dynamic) {
+  case reading_id != "" && pages_read >= 0 {
+    True -> Ok(FinishReading(reading_id: reading_id, pages_read: pages_read))
+    False -> Error(desk.invalid_params())
   }
 }
 

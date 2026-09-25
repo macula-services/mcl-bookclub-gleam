@@ -37,13 +37,10 @@ pub fn handle(
   state: book_state.BookState,
   command: retire_book_v1.RetireBook,
 ) -> desk.DeskResult {
-  case book_state.is_on_shelf(state) {
-    True ->
-      case retire_book_v1.validate(command) {
-        Ok(_) -> events(state, command)
-        Error(e) -> Error(e)
-      }
-    False -> Error(desk.error_atom("not_procured"))
+  case book_state.is_on_shelf(state), retire_book_v1.validate(command) {
+    True, Ok(_) -> events(state, command)
+    True, Error(e) -> Error(e)
+    False, _ -> Error(desk.error_atom("not_procured"))
   }
 }
 

@@ -35,13 +35,26 @@ pub fn execute(
   state: reading_state.ReadingState,
   payload: Payload,
 ) -> desk.DeskResult {
+  execute_not_start_reading_v1(state, payload)
+}
+
+fn execute_not_start_reading_v1(
+  state: reading_state.ReadingState,
+  payload: Payload,
+) -> desk.DeskResult {
   case desk.command_is(payload, "start_reading_v1") {
     True -> guarded(state, payload, maybe_start_reading.handle_from_map)
-    False ->
-      case desk.command_is(payload, "finish_reading_v1") {
-        True -> guarded(state, payload, maybe_finish_reading.handle_from_map)
-        False -> Error(desk.unknown_command())
-      }
+    False -> execute_not_finish_reading_v1(state, payload)
+  }
+}
+
+fn execute_not_finish_reading_v1(
+  state: reading_state.ReadingState,
+  payload: Payload,
+) -> desk.DeskResult {
+  case desk.command_is(payload, "finish_reading_v1") {
+    True -> guarded(state, payload, maybe_finish_reading.handle_from_map)
+    False -> Error(desk.unknown_command())
   }
 }
 

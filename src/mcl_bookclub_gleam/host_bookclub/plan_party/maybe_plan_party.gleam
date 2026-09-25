@@ -40,13 +40,10 @@ pub fn handle(
   state: bookclub_state.BookclubState,
   command: plan_party_v1.PlanParty,
 ) -> desk.DeskResult {
-  case bookclub_state.is_initiated(state) {
-    False -> Error(desk.error_atom("not_initiated"))
-    True ->
-      case plan_party_v1.validate(command) {
-        Ok(_) -> events(state)
-        Error(e) -> Error(e)
-      }
+  case bookclub_state.is_initiated(state), plan_party_v1.validate(command) {
+    False, _ -> Error(desk.error_atom("not_initiated"))
+    True, Ok(_) -> events(state)
+    True, Error(e) -> Error(e)
   }
 }
 

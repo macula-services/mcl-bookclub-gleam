@@ -33,13 +33,26 @@ pub fn execute(
   state: book_state.BookState,
   payload: Payload,
 ) -> desk.DeskResult {
+  execute_not_procure_book_v1(state, payload)
+}
+
+fn execute_not_procure_book_v1(
+  state: book_state.BookState,
+  payload: Payload,
+) -> desk.DeskResult {
   case desk.command_is(payload, "procure_book_v1") {
     True -> guarded(state, payload, maybe_procure_book.handle_from_map)
-    False ->
-      case desk.command_is(payload, "retire_book_v1") {
-        True -> guarded(state, payload, maybe_retire_book.handle_from_map)
-        False -> Error(desk.unknown_command())
-      }
+    False -> execute_not_retire_book_v1(state, payload)
+  }
+}
+
+fn execute_not_retire_book_v1(
+  state: book_state.BookState,
+  payload: Payload,
+) -> desk.DeskResult {
+  case desk.command_is(payload, "retire_book_v1") {
+    True -> guarded(state, payload, maybe_retire_book.handle_from_map)
+    False -> Error(desk.unknown_command())
   }
 }
 

@@ -38,13 +38,13 @@ pub fn handle(
   state: reading_state.ReadingState,
   command: finish_reading_v1.FinishReading,
 ) -> desk.DeskResult {
-  case reading_state.is_in_progress(state) {
-    False -> Error(desk.error_atom("not_started"))
-    True ->
-      case finish_reading_v1.validate(command) {
-        Ok(_) -> events(state, command)
-        Error(e) -> Error(e)
-      }
+  case
+    reading_state.is_in_progress(state),
+    finish_reading_v1.validate(command)
+  {
+    False, _ -> Error(desk.error_atom("not_started"))
+    True, Ok(_) -> events(state, command)
+    True, Error(e) -> Error(e)
   }
 }
 

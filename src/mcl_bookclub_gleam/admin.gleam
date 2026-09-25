@@ -169,20 +169,26 @@ pub fn dispatch(
 fn enrich_club_name(params: Payload) -> Payload {
   case desk.get_string(params, "club_name") {
     Ok(_) -> params
-    Error(_) ->
-      case desk.get_string(params, "club_id") {
-        Ok(club_id) ->
-          case get_bookclub_by_id.find(club_id) {
-            Ok(club) ->
-              dict.insert(
-                params,
-                atom("club_name"),
-                dynamic.string(desk.get_string_default(club, "name", "")),
-              )
-            Error(_) -> params
-          }
-        Error(_) -> params
-      }
+    Error(_) -> enrich_from_club_id(params)
+  }
+}
+
+fn enrich_from_club_id(params: Payload) -> Payload {
+  case desk.get_string(params, "club_id") {
+    Ok(club_id) -> stamp_club_name(params, club_id)
+    Error(_) -> params
+  }
+}
+
+fn stamp_club_name(params: Payload, club_id: String) -> Payload {
+  case get_bookclub_by_id.find(club_id) {
+    Ok(club) ->
+      dict.insert(
+        params,
+        atom("club_name"),
+        dynamic.string(desk.get_string_default(club, "name", "")),
+      )
+    Error(_) -> params
   }
 }
 

@@ -38,13 +38,13 @@ pub fn handle(
   state: bookclub_state.BookclubState,
   command: initiate_bookclub_v1.InitiateBookclub,
 ) -> desk.DeskResult {
-  case bookclub_state.is_initiated(state) {
-    True -> Error(desk.error_atom("already_initiated"))
-    False ->
-      case initiate_bookclub_v1.validate(command) {
-        Ok(_) -> events(command)
-        Error(e) -> Error(e)
-      }
+  case
+    bookclub_state.is_initiated(state),
+    initiate_bookclub_v1.validate(command)
+  {
+    True, _ -> Error(desk.error_atom("already_initiated"))
+    False, Ok(_) -> events(command)
+    False, Error(e) -> Error(e)
   }
 }
 

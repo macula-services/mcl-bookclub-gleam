@@ -41,17 +41,36 @@ pub fn execute(
   state: bookclub_state.BookclubState,
   payload: Payload,
 ) -> desk.DeskResult {
+  execute_not_initiate_bookclub_v1(state, payload)
+}
+
+fn execute_not_initiate_bookclub_v1(
+  state: bookclub_state.BookclubState,
+  payload: Payload,
+) -> desk.DeskResult {
   case desk.command_is(payload, "initiate_bookclub_v1") {
     True -> guarded(state, payload, maybe_initiate_bookclub.handle_from_map)
-    False ->
-      case desk.command_is(payload, "archive_bookclub_v1") {
-        True -> guarded(state, payload, maybe_archive_bookclub.handle_from_map)
-        False ->
-          case desk.command_is(payload, "plan_party_v1") {
-            True -> guarded(state, payload, maybe_plan_party.handle_from_map)
-            False -> Error(desk.unknown_command())
-          }
-      }
+    False -> execute_not_archive_bookclub_v1(state, payload)
+  }
+}
+
+fn execute_not_archive_bookclub_v1(
+  state: bookclub_state.BookclubState,
+  payload: Payload,
+) -> desk.DeskResult {
+  case desk.command_is(payload, "archive_bookclub_v1") {
+    True -> guarded(state, payload, maybe_archive_bookclub.handle_from_map)
+    False -> execute_not_plan_party_v1(state, payload)
+  }
+}
+
+fn execute_not_plan_party_v1(
+  state: bookclub_state.BookclubState,
+  payload: Payload,
+) -> desk.DeskResult {
+  case desk.command_is(payload, "plan_party_v1") {
+    True -> guarded(state, payload, maybe_plan_party.handle_from_map)
+    False -> Error(desk.unknown_command())
   }
 }
 

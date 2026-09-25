@@ -38,13 +38,10 @@ pub fn handle(
   state: member_state.MemberState,
   command: register_member_v1.RegisterMember,
 ) -> desk.DeskResult {
-  case member_state.is_registered(state) {
-    True -> Error(desk.error_atom("already_registered"))
-    False ->
-      case register_member_v1.validate(command) {
-        Ok(_) -> events(command)
-        Error(e) -> Error(e)
-      }
+  case member_state.is_registered(state), register_member_v1.validate(command) {
+    True, _ -> Error(desk.error_atom("already_registered"))
+    False, Ok(_) -> events(command)
+    False, Error(e) -> Error(e)
   }
 }
 

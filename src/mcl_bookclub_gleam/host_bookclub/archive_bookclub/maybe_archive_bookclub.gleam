@@ -44,13 +44,13 @@ pub fn handle(
   state: bookclub_state.BookclubState,
   command: archive_bookclub_v1.ArchiveBookclub,
 ) -> desk.DeskResult {
-  case bookclub_state.is_initiated(state) {
-    False -> Error(desk.error_atom("not_initiated"))
-    True ->
-      case archive_bookclub_v1.validate(command) {
-        Ok(_) -> events(state, command)
-        Error(e) -> Error(e)
-      }
+  case
+    bookclub_state.is_initiated(state),
+    archive_bookclub_v1.validate(command)
+  {
+    False, _ -> Error(desk.error_atom("not_initiated"))
+    True, Ok(_) -> events(state, command)
+    True, Error(e) -> Error(e)
   }
 }
 

@@ -110,17 +110,28 @@ fn init_store(
   subject: process.Subject(Message),
 ) -> Result(actor.Initialised(State, Message, process.Subject(Message)), String) {
   case esqlite.ensure_dir(sqlite_path) {
-    Ok(_) ->
-      case esqlite.open(sqlite_path) {
-        Ok(conn) ->
-          case create_schema(conn, schema()) {
-            Ok(_) ->
-              Ok(actor.initialised(State(conn)) |> actor.returning(subject))
-            Error(_) -> Error("schema_failed")
-          }
-        Error(_) -> Error("open_failed")
-      }
+    Ok(_) -> opened(sqlite_path, subject)
     Error(_) -> Error("ensure_dir_failed")
+  }
+}
+
+fn opened(
+  sqlite_path: String,
+  subject: process.Subject(Message),
+) -> Result(actor.Initialised(State, Message, process.Subject(Message)), String) {
+  case esqlite.open(sqlite_path) {
+    Ok(conn) -> schemed(conn, subject)
+    Error(_) -> Error("open_failed")
+  }
+}
+
+fn schemed(
+  conn: dynamic.Dynamic,
+  subject: process.Subject(Message),
+) -> Result(actor.Initialised(State, Message, process.Subject(Message)), String) {
+  case create_schema(conn, schema()) {
+    Ok(_) -> Ok(actor.initialised(State(conn)) |> actor.returning(subject))
+    Error(_) -> Error("schema_failed")
   }
 }
 

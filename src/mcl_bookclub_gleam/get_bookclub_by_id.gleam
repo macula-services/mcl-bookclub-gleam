@@ -39,13 +39,23 @@ fn replied(
   state: dynamic.Dynamic,
 ) -> dynamic.Dynamic {
   case desk.string_from_dynamic(club_id) {
-    Ok(id) ->
-      case get_bookclub_by_id.find(id) {
-        Ok(club) -> wrap(#(atom("reply"), to_wire(club), state))
-        Error(reason) -> wrap(#(atom("error"), reason, state))
-      }
-    Error(_) -> wrap(#(atom("error"), atom("missing_club_id"), state))
+    Ok(id) -> replied_found(id, state)
+    Error(_) -> error_reply(atom("missing_club_id"), state)
   }
+}
+
+fn replied_found(id: String, state: dynamic.Dynamic) -> dynamic.Dynamic {
+  case get_bookclub_by_id.find(id) {
+    Ok(club) -> wrap(#(atom("reply"), to_wire(club), state))
+    Error(reason) -> error_reply(reason, state)
+  }
+}
+
+fn error_reply(
+  reason: dynamic.Dynamic,
+  state: dynamic.Dynamic,
+) -> dynamic.Dynamic {
+  wrap(#(atom("error"), reason, state))
 }
 
 /// The reply's values go back out as CBOR text / 1 / 0.
