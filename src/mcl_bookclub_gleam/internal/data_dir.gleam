@@ -4,7 +4,6 @@
 //// cannot drift.
 
 import gleam/dynamic
-import gleam/erlang/charlist
 import mcl_bookclub_gleam/internal/payload.{atom, wrap}
 
 /// os:getenv -- false (the atom) when unset.
@@ -26,10 +25,15 @@ pub fn sqlite_path() -> String {
 }
 
 /// The data dir as a CHARLIST -- dets/ra rejects binaries, so the
-/// service's data_dir/0 must return a charlist, never a String.
+/// service's data_dir/0 must return a charlist, never a String. Note:
+/// gleam_erlang's charlist module stores a BINARY; a real charlist comes
+/// from the FFI's binary_to_list.
 pub fn data_dir_charlist() -> dynamic.Dynamic {
-  wrap(charlist.from_string(data_dir()))
+  wrap(to_charlist(data_dir()))
 }
+
+@external(erlang, "mcl_bookclub_gleam_ffi", "bin_to_list")
+fn to_charlist(binary: String) -> dynamic.Dynamic
 
 /// The ok atom mcl_om's contract callbacks answer with.
 pub fn ok_atom() -> dynamic.Dynamic {

@@ -58,7 +58,7 @@ pub fn unwrap(value: dynamic.Dynamic) -> dynamic.Dynamic
 @external(erlang, "reckon_gater_stream_id", "new")
 pub fn mint_stream_id(prefix: String) -> String
 
-@external(erlang, "reckon_gater_stream_id", "validate")
+@external(erlang, "mcl_bookclub_gleam_ffi", "validate_stream_id")
 pub fn validate_stream_id(id: String) -> Result(Nil, dynamic.Dynamic)
 
 /// The system clock, for event timestamps (milliseconds, like the twins).

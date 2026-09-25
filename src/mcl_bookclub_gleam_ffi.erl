@@ -18,6 +18,10 @@
 -export([safe_ping/2, send_reply/2]).
 -export([wrap/1]).
 -export([logger_warning/1]).
+-export([bin_to_list/1]).
+-export([validate_stream_id/1]).
+-export([test_set_evoq_env/1, test_ensure_store/2, test_start_subscription/1,
+         test_read_stream/2, test_source_files/1, file_read/1]).
 
 %%% evoq_command_router:dispatch/2 returns {ok, Version, [Event]} -- a
 %%% three-tuple Gleam's Result cannot carry. Reshaped to
@@ -114,8 +118,93 @@ send_reply({Pid, Ref}, Reply) ->
 wrap(Term) ->
     Term.
 
+%%% A REAL charlist: gleam_erlang's charlist module stores a binary, and
+%%% the twins' contract callbacks (data_dir/0, reckon-db paths) need an
+%%% actual list of codepoints.
+bin_to_list(Bin) ->
+    binary_to_list(Bin).
+
+%%% reckon_gater_stream_id:validate/1 returns a bare `ok' atom, which
+%%% Gleam's Result cannot carry. Reshaped to {ok, nil} | {error, Reason}.
+validate_stream_id(Id) ->
+    case reckon_gater_stream_id:validate(Id) of
+        ok -> {ok, nil};
+        {error, Reason} -> {error, Reason}
+    end.
+
 %%% The policy's warn channel: logger:warning/1, for refusals that must not
 %%% take the delivery of later events down with them.
 logger_warning(Term) ->
     logger:warning(Term),
     ok.
+
+%%% =========================================================================
+%%% Test support: the reckon-db plumbing the twins reach through -include_lib
+%%% records, exposed here so Gleam tests never build a #store_config{} tuple.
+%%% =========================================================================
+
+-include_lib("reckon_db/include/reckon_db.hrl").
+-include_lib("reckon_gater/include/reckon_gater_types.hrl").
+
+%%% The evoq env a desk test needs: the reckon-db adapter on all three
+%%% roles and the store id, exactly what the twins' test stores set.
+test_set_evoq_env(StoreId) ->
+    [ok = application:set_env(evoq, K, V)
+     || {K, V} <- [{event_store_adapter, reckon_evoq_adapter},
+                   {subscription_adapter, reckon_evoq_adapter},
+                   {snapshot_store_adapter, reckon_evoq_adapter},
+                   {store_id, StoreId}]],
+    {ok, nil}.
+
+%%% Start the store (single mode), the same call the facade's boot makes.
+%%% Idempotent across the suite: the tests share ONE store per VM, like the
+%%% twins' eunit setup; a later suite's start finds it already running.
+test_ensure_store(StoreId, DataDir) ->
+    case mcl_om_store:ensure_store(StoreId, DataDir, [], single) of
+        ok -> {ok, nil};
+        {error, {already_started, _}} -> {ok, nil};
+        {error, Reason} -> {error, Reason}
+    end.
+
+%%% The store subscription, unlinked from the test process. One per store:
+%%% a later suite's start finds it already running.
+test_start_subscription(StoreId) ->
+    case evoq_store_subscription:start_link(StoreId) of
+        {ok, Sub} ->
+            unlink(Sub),
+            {ok, Sub};
+        {error, {already_started, _}} ->
+            {ok, already_running};
+        {error, Reason} ->
+            {error, Reason}
+    end.
+
+%%% A stream's events, as {EventType, Data} pairs: the record plumbing
+%%% stays on this side of the FFI.
+test_read_stream(StoreId, StreamId) ->
+    events(reckon_db_streams:read(StoreId, StreamId, 0, 1000, forward)).
+
+events({ok, Events}) ->
+    [{EventType, Data}
+     || #event{event_type = EventType, data = Data} <- Events];
+events({error, {stream_not_found, _}}) ->
+    [];
+events({error, _} = Error) ->
+    erlang:error(Error).
+
+%%% Every source file under a directory, as {RelPath, Content} -- the
+%%% boundary tests scan these for banned imports and status literals.
+test_source_files(Dir) ->
+    {ok, Entries} = file:list_dir(Dir),
+    lists:flatmap(
+      fun(Entry) ->
+              Path = filename:join(Dir, Entry),
+              case filelib:is_dir(Path) of
+                  true -> test_source_files(Path);
+                  false -> [{Path, file:read_file(Path)}]
+              end
+      end, Entries).
+
+%%% file:read_file/1, shaped for Gleam.
+file_read(Path) ->
+    file:read_file(Path).
