@@ -39,16 +39,24 @@ pub fn new(params: Payload) -> Result(StartReading, dynamic.Dynamic) {
     desk.get_string(params, "book_id")
   {
     Ok(reading_id), Ok(member_id), Ok(book_id) ->
-      case reading_id != "" && member_id != "" && book_id != "" {
-        True ->
-          Ok(StartReading(
-            reading_id: reading_id,
-            member_id: member_id,
-            book_id: book_id,
-          ))
-        False -> Error(desk.invalid_params())
-      }
+      new_when_valid(reading_id, member_id, book_id)
     _, _, _ -> Error(desk.missing_required_fields())
+  }
+}
+
+fn new_when_valid(
+  reading_id: String,
+  member_id: String,
+  book_id: String,
+) -> Result(StartReading, dynamic.Dynamic) {
+  case reading_id != "" && member_id != "" && book_id != "" {
+    True ->
+      Ok(StartReading(
+        reading_id: reading_id,
+        member_id: member_id,
+        book_id: book_id,
+      ))
+    False -> Error(desk.invalid_params())
   }
 }
 

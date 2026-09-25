@@ -112,12 +112,15 @@ fn read_params(
   req: dynamic.Dynamic,
 ) -> #(Payload, dynamic.Dynamic) {
   case method {
-    "POST" ->
-      case cowboy.read_body(req) {
-        Ok(#(body, req1)) -> #(decode(body), req1)
-        Error(_) -> #(dict.new(), req)
-      }
+    "POST" -> read_body_params(req)
     _ -> #(dict.new(), req)
+  }
+}
+
+fn read_body_params(req: dynamic.Dynamic) -> #(Payload, dynamic.Dynamic) {
+  case cowboy.read_body(req) {
+    Ok(#(body, req1)) -> #(decode(body), req1)
+    Error(_) -> #(dict.new(), req)
   }
 }
 
@@ -257,22 +260,27 @@ fn not_found_body(reason: dynamic.Dynamic) -> Payload {
 /// The wire's edges
 ///====================================================================
 fn admin_port() -> Int {
-  case app_env.get_env(atom(app_name), atom("admin_port"), dynamic.int(8488)) {
-    port ->
-      case decode.run(port, decode.int) {
-        Ok(int) -> int
-        Error(_) -> 8488
-      }
+  let port =
+    app_env.get_env(atom(app_name), atom("admin_port"), dynamic.int(8488))
+  port_to_int(port)
+}
+
+fn port_to_int(port: dynamic.Dynamic) -> Int {
+  case decode.run(port, decode.int) {
+    Ok(int) -> int
+    Error(_) -> 8488
   }
 }
 
 fn admin_ip() -> Option(String) {
-  case app_env.get_env(atom(app_name), atom("admin_ip"), atom("undefined")) {
-    ip ->
-      case decode.run(ip, decode.string) {
-        Ok(string) -> option.Some(string)
-        Error(_) -> option.None
-      }
+  let ip = app_env.get_env(atom(app_name), atom("admin_ip"), atom("undefined"))
+  ip_to_option(ip)
+}
+
+fn ip_to_option(ip: dynamic.Dynamic) -> Option(String) {
+  case decode.run(ip, decode.string) {
+    Ok(string) -> option.Some(string)
+    Error(_) -> option.None
   }
 }
 

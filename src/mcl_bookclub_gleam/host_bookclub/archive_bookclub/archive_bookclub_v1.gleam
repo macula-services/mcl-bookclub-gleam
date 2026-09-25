@@ -24,12 +24,18 @@ pub fn new(params: Payload) -> Result(ArchiveBookclub, dynamic.Dynamic) {
     desk.get_string(params, "club_id"),
     desk.get_string(params, "archived_by")
   {
-    Ok(club_id), Ok(archived_by) ->
-      case club_id != "" && archived_by != "" {
-        True -> Ok(ArchiveBookclub(club_id: club_id, archived_by: archived_by))
-        False -> Error(desk.invalid_params())
-      }
+    Ok(club_id), Ok(archived_by) -> new_when_valid(club_id, archived_by)
     _, _ -> Error(desk.missing_required_fields())
+  }
+}
+
+fn new_when_valid(
+  club_id: String,
+  archived_by: String,
+) -> Result(ArchiveBookclub, dynamic.Dynamic) {
+  case club_id != "" && archived_by != "" {
+    True -> Ok(ArchiveBookclub(club_id: club_id, archived_by: archived_by))
+    False -> Error(desk.invalid_params())
   }
 }
 

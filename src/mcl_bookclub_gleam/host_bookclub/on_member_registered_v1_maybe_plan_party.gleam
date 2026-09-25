@@ -55,11 +55,15 @@ pub fn handle_event(
 ) -> Result(PartyPolicyState, dynamic.Dynamic) {
   let data = desk.event_data(event)
   let count = state.registrations + 1
-  case count % party_every {
-    0 -> plan_party(desk.get_string_default(data, "club_id", ""))
-    _ -> Nil
+  case party_is_due(count) {
+    True -> plan_party(desk.get_string_default(data, "club_id", ""))
+    False -> Nil
   }
   Ok(PartyPolicyState(registrations: count))
+}
+
+fn party_is_due(count: Int) -> Bool {
+  count % party_every == 0
 }
 
 /// The dispatch result is the only error channel. A party that cannot be
@@ -75,12 +79,15 @@ fn plan_party(club_id: String) -> Nil {
       ]),
     )
   {
-    Ok(command) ->
-      case maybe_plan_party.dispatch(command) {
-        Ok(_) -> Nil
-        Error(reason) -> warn(plan_party_v1.stream_id(command), reason)
-      }
+    Ok(command) -> dispatch_party(command)
     Error(reason) -> warn(club_id, reason)
+  }
+}
+
+fn dispatch_party(command: plan_party_v1.PlanParty) -> Nil {
+  case maybe_plan_party.dispatch(command) {
+    Ok(_) -> Nil
+    Error(reason) -> warn(plan_party_v1.stream_id(command), reason)
   }
 }
 

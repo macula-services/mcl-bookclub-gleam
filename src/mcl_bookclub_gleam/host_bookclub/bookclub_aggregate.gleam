@@ -100,6 +100,10 @@ pub fn from_snapshot(
   snapshot_data: dynamic.Dynamic,
 ) -> bookclub_state.BookclubState {
   let assert Ok(map) = desk.decode_map(snapshot_data)
+  bookclub_state_from_map(map)
+}
+
+fn bookclub_state_from_map(map: Payload) -> bookclub_state.BookclubState {
   let assert Ok(state) = bookclub_state.from_map(map)
   state
 }

@@ -26,12 +26,18 @@ pub fn new(params: Payload) -> Result(RetireBook, dynamic.Dynamic) {
     desk.get_string(params, "book_id"),
     desk.get_string(params, "retired_by")
   {
-    Ok(book_id), Ok(retired_by) ->
-      case book_id != "" && retired_by != "" {
-        True -> Ok(RetireBook(book_id: book_id, retired_by: retired_by))
-        False -> Error(desk.invalid_params())
-      }
+    Ok(book_id), Ok(retired_by) -> new_when_valid(book_id, retired_by)
     _, _ -> Error(desk.missing_required_fields())
+  }
+}
+
+fn new_when_valid(
+  book_id: String,
+  retired_by: String,
+) -> Result(RetireBook, dynamic.Dynamic) {
+  case book_id != "" && retired_by != "" {
+    True -> Ok(RetireBook(book_id: book_id, retired_by: retired_by))
+    False -> Error(desk.invalid_params())
   }
 }
 

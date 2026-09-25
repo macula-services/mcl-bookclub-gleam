@@ -45,18 +45,28 @@ pub fn new(params: Payload) -> Result(ProcureBook, dynamic.Dynamic) {
     desk.get_string(params, "author")
   {
     Ok(book_id), Ok(club_id), Ok(title), Ok(author) ->
-      case book_id != "" && club_id != "" && title != "" && author != "" {
-        True ->
-          Ok(ProcureBook(
-            book_id: book_id,
-            club_id: club_id,
-            title: title,
-            author: author,
-            club_name: desk.get_string_default(params, "club_name", ""),
-          ))
-        False -> Error(desk.invalid_params())
-      }
+      new_when_valid(params, book_id, club_id, title, author)
     _, _, _, _ -> Error(desk.missing_required_fields())
+  }
+}
+
+fn new_when_valid(
+  params: Payload,
+  book_id: String,
+  club_id: String,
+  title: String,
+  author: String,
+) -> Result(ProcureBook, dynamic.Dynamic) {
+  case book_id != "" && club_id != "" && title != "" && author != "" {
+    True ->
+      Ok(ProcureBook(
+        book_id: book_id,
+        club_id: club_id,
+        title: title,
+        author: author,
+        club_name: desk.get_string_default(params, "club_name", ""),
+      ))
+    False -> Error(desk.invalid_params())
   }
 }
 

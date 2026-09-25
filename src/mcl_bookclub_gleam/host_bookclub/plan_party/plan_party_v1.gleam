@@ -23,12 +23,15 @@ pub fn command_type() -> dynamic.Dynamic {
 /// The command's payload: the club's stream id is the one required field.
 pub fn new(params: Payload) -> Result(PlanParty, dynamic.Dynamic) {
   case desk.get_string(params, "club_id") {
-    Ok(club_id) ->
-      case club_id != "" {
-        True -> Ok(PlanParty(club_id: club_id))
-        False -> Error(desk.invalid_params())
-      }
+    Ok(club_id) -> new_when_valid(club_id)
     Error(_) -> Error(desk.missing_required_fields())
+  }
+}
+
+fn new_when_valid(club_id: String) -> Result(PlanParty, dynamic.Dynamic) {
+  case club_id != "" {
+    True -> Ok(PlanParty(club_id: club_id))
+    False -> Error(desk.invalid_params())
   }
 }
 

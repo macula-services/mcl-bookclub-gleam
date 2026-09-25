@@ -42,17 +42,26 @@ pub fn new(params: Payload) -> Result(RegisterMember, dynamic.Dynamic) {
     desk.get_string(params, "name")
   {
     Ok(member_id), Ok(club_id), Ok(name) ->
-      case member_id != "" && club_id != "" && name != "" {
-        True ->
-          Ok(RegisterMember(
-            member_id: member_id,
-            club_id: club_id,
-            name: name,
-            club_name: desk.get_string_default(params, "club_name", ""),
-          ))
-        False -> Error(desk.invalid_params())
-      }
+      new_when_valid(params, member_id, club_id, name)
     _, _, _ -> Error(desk.missing_required_fields())
+  }
+}
+
+fn new_when_valid(
+  params: Payload,
+  member_id: String,
+  club_id: String,
+  name: String,
+) -> Result(RegisterMember, dynamic.Dynamic) {
+  case member_id != "" && club_id != "" && name != "" {
+    True ->
+      Ok(RegisterMember(
+        member_id: member_id,
+        club_id: club_id,
+        name: name,
+        club_name: desk.get_string_default(params, "club_name", ""),
+      ))
+    False -> Error(desk.invalid_params())
   }
 }
 

@@ -83,6 +83,10 @@ pub fn from_snapshot(
   snapshot_data: dynamic.Dynamic,
 ) -> member_state.MemberState {
   let assert Ok(map) = desk.decode_map(snapshot_data)
+  member_state_from_map(map)
+}
+
+fn member_state_from_map(map: Payload) -> member_state.MemberState {
   let assert Ok(state) = member_state.from_map(map)
   state
 }

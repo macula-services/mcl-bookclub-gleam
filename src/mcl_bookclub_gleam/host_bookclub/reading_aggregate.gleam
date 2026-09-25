@@ -84,6 +84,10 @@ pub fn from_snapshot(
   snapshot_data: dynamic.Dynamic,
 ) -> reading_state.ReadingState {
   let assert Ok(map) = desk.decode_map(snapshot_data)
+  reading_state_from_map(map)
+}
+
+fn reading_state_from_map(map: Payload) -> reading_state.ReadingState {
   let assert Ok(state) = reading_state.from_map(map)
   state
 }

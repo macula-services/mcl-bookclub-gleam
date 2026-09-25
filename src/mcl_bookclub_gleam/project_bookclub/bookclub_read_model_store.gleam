@@ -141,11 +141,18 @@ fn create_schema(
 ) -> Result(Nil, dynamic.Dynamic) {
   case statements {
     [] -> Ok(Nil)
-    [sql, ..rest] ->
-      case esqlite.exec(conn, sql, []) {
-        Ok(_) -> create_schema(conn, rest)
-        Error(e) -> Error(e)
-      }
+    [sql, ..rest] -> create_one_statement(conn, sql, rest)
+  }
+}
+
+fn create_one_statement(
+  conn: dynamic.Dynamic,
+  sql: String,
+  rest: List(String),
+) -> Result(Nil, dynamic.Dynamic) {
+  case esqlite.exec(conn, sql, []) {
+    Ok(_) -> create_schema(conn, rest)
+    Error(e) -> Error(e)
   }
 }
 

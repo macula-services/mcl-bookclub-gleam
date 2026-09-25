@@ -116,12 +116,20 @@ fn to_wire_not_bool(value: dynamic.Dynamic) -> dynamic.Dynamic {
 
 fn to_wire_not_list(value: dynamic.Dynamic) -> dynamic.Dynamic {
   case desk.decode_map(value) {
-    Ok(map) ->
-      desk.payload_to_dynamic(
-        dict.map_values(map, fn(_key, value) { to_wire(value) }),
-      )
+    Ok(map) -> desk.payload_to_dynamic(to_wire_map(map))
     Error(_) -> value
   }
+}
+
+fn to_wire_map(map: Payload) -> Payload {
+  dict.map_values(map, to_wire_one)
+}
+
+fn to_wire_one(
+  _key: dynamic.Dynamic,
+  value: dynamic.Dynamic,
+) -> dynamic.Dynamic {
+  to_wire(value)
 }
 
 /// A whole fact, wire-shaped for publishing.

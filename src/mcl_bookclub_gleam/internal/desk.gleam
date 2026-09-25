@@ -142,11 +142,14 @@ pub fn get_int_default(
   default: Int,
 ) -> Int {
   case get(payload, key_name) {
-    Ok(value) ->
-      case decode.run(value, decode.int) {
-        Ok(int) -> int
-        Error(_) -> default
-      }
+    Ok(value) -> int_from_dynamic_default(value, default)
+    Error(_) -> default
+  }
+}
+
+fn int_from_dynamic_default(value: dynamic.Dynamic, default: Int) -> Int {
+  case decode.run(value, decode.int) {
+    Ok(int) -> int
     Error(_) -> default
   }
 }
@@ -157,12 +160,17 @@ pub fn get_int(
   key_name: String,
 ) -> Result(Int, dynamic.Dynamic) {
   case get(payload, key_name) {
-    Ok(value) ->
-      case decode.run(value, decode.int) {
-        Ok(int) -> Ok(int)
-        Error(_) -> Error(invalid_params())
-      }
+    Ok(value) -> int_from_dynamic_required(value)
     Error(e) -> Error(e)
+  }
+}
+
+fn int_from_dynamic_required(
+  value: dynamic.Dynamic,
+) -> Result(Int, dynamic.Dynamic) {
+  case decode.run(value, decode.int) {
+    Ok(int) -> Ok(int)
+    Error(_) -> Error(invalid_params())
   }
 }
 
@@ -178,11 +186,14 @@ pub fn command_is(payload: Payload, command_type: String) -> Bool {
 /// The event's type name, read tolerantly (atom or binary key).
 pub fn event_type_of(payload: Payload) -> String {
   case get(payload, "event_type") {
-    Ok(value) ->
-      case decode.run(value, decode.string) {
-        Ok(string) -> string
-        Error(_) -> ""
-      }
+    Ok(value) -> string_from_dynamic_or_empty(value)
+    Error(_) -> ""
+  }
+}
+
+fn string_from_dynamic_or_empty(value: dynamic.Dynamic) -> String {
+  case decode.run(value, decode.string) {
+    Ok(string) -> string
     Error(_) -> ""
   }
 }
@@ -192,11 +203,14 @@ pub fn event_type_of(payload: Payload) -> String {
 /// that shows up on the second command, never the first.
 pub fn event_data(payload: Payload) -> Payload {
   case dict.get(payload, atom("data")) {
-    Ok(inner) ->
-      case decode_map(inner) {
-        Ok(map) -> map
-        Error(_) -> payload
-      }
+    Ok(inner) -> map_or_payload(inner, payload)
+    Error(_) -> payload
+  }
+}
+
+fn map_or_payload(inner: dynamic.Dynamic, payload: Payload) -> Payload {
+  case decode_map(inner) {
+    Ok(map) -> map
     Error(_) -> payload
   }
 }
@@ -238,10 +252,16 @@ pub fn error_atom(name: String) -> dynamic.Dynamic {
 pub fn validate_stream_ids(ids: List(String)) -> Result(Nil, dynamic.Dynamic) {
   case ids {
     [] -> Ok(Nil)
-    [id, ..rest] ->
-      case ids.validate_stream_id(id) {
-        Ok(_) -> validate_stream_ids(rest)
-        Error(reason) -> Error(reason)
-      }
+    [id, ..rest] -> validate_one_stream_id(id, rest)
+  }
+}
+
+fn validate_one_stream_id(
+  id: String,
+  rest: List(String),
+) -> Result(Nil, dynamic.Dynamic) {
+  case ids.validate_stream_id(id) {
+    Ok(_) -> validate_stream_ids(rest)
+    Error(reason) -> Error(reason)
   }
 }

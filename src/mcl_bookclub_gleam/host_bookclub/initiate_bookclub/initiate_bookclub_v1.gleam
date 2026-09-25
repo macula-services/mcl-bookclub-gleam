@@ -38,16 +38,24 @@ pub fn new(params: Payload) -> Result(InitiateBookclub, dynamic.Dynamic) {
     desk.get_string(params, "initiated_by")
   {
     Ok(club_id), Ok(name), Ok(initiated_by) ->
-      case club_id != "" && name != "" && initiated_by != "" {
-        True ->
-          Ok(InitiateBookclub(
-            club_id: club_id,
-            name: name,
-            initiated_by: initiated_by,
-          ))
-        False -> Error(desk.invalid_params())
-      }
+      new_when_valid(club_id, name, initiated_by)
     _, _, _ -> Error(desk.missing_required_fields())
+  }
+}
+
+fn new_when_valid(
+  club_id: String,
+  name: String,
+  initiated_by: String,
+) -> Result(InitiateBookclub, dynamic.Dynamic) {
+  case club_id != "" && name != "" && initiated_by != "" {
+    True ->
+      Ok(InitiateBookclub(
+        club_id: club_id,
+        name: name,
+        initiated_by: initiated_by,
+      ))
+    False -> Error(desk.invalid_params())
   }
 }
 

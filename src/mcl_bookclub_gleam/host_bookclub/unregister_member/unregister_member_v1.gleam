@@ -25,15 +25,22 @@ pub fn new(params: Payload) -> Result(UnregisterMember, dynamic.Dynamic) {
     desk.get_string(params, "unregistered_by")
   {
     Ok(member_id), Ok(unregistered_by) ->
-      case member_id != "" && unregistered_by != "" {
-        True ->
-          Ok(UnregisterMember(
-            member_id: member_id,
-            unregistered_by: unregistered_by,
-          ))
-        False -> Error(desk.invalid_params())
-      }
+      new_when_valid(member_id, unregistered_by)
     _, _ -> Error(desk.missing_required_fields())
+  }
+}
+
+fn new_when_valid(
+  member_id: String,
+  unregistered_by: String,
+) -> Result(UnregisterMember, dynamic.Dynamic) {
+  case member_id != "" && unregistered_by != "" {
+    True ->
+      Ok(UnregisterMember(
+        member_id: member_id,
+        unregistered_by: unregistered_by,
+      ))
+    False -> Error(desk.invalid_params())
   }
 }
 

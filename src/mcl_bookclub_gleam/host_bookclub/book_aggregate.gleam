@@ -80,6 +80,10 @@ pub fn snapshot(state: book_state.BookState) -> dynamic.Dynamic {
 
 pub fn from_snapshot(snapshot_data: dynamic.Dynamic) -> book_state.BookState {
   let assert Ok(map) = desk.decode_map(snapshot_data)
+  book_state_from_map(map)
+}
+
+fn book_state_from_map(map: Payload) -> book_state.BookState {
   let assert Ok(state) = book_state.from_map(map)
   state
 }
