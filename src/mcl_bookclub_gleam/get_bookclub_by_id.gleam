@@ -46,7 +46,7 @@ fn replied(
 
 fn replied_found(id: String, state: dynamic.Dynamic) -> dynamic.Dynamic {
   case get_bookclub_by_id.find(id) {
-    Ok(club) -> wrap(#(atom("reply"), to_wire(club), state))
+    Ok(club) -> wrap(#(atom("reply"), club_to_wire(club), state))
     Error(reason) -> error_reply(reason, state)
   }
 }
@@ -59,8 +59,14 @@ fn error_reply(
 }
 
 /// The reply's values go back out as CBOR text / 1 / 0.
-fn to_wire(club: Payload) -> dynamic.Dynamic {
+fn club_to_wire(club: get_bookclub_by_id.Club) -> dynamic.Dynamic {
   desk.payload_to_dynamic(
-    dict.map_values(club, fn(_key, value) { facts.to_wire(value) }),
+    dict.from_list([
+      #(atom("club_id"), facts.to_wire(dynamic.string(club.club_id))),
+      #(atom("name"), facts.to_wire(dynamic.string(club.name))),
+      #(atom("status"), facts.to_wire(dynamic.string(club.status))),
+      #(atom("initiated_by"), facts.to_wire(dynamic.string(club.initiated_by))),
+      #(atom("initiated_at"), facts.to_wire(dynamic.int(club.initiated_at))),
+    ]),
   )
 }

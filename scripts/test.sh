@@ -18,9 +18,15 @@ cd "$(dirname "$0")/.."
 run() {
   set -e
   gleam build
+  # No application pre-start, mirroring the twins' eunit: their test VM
+  # boots nothing; each suite's setup starts only the division apps. The
+  # gleam-generated test main would ensure_all_started the whole app tree
+  # (mcl_om and macula included), and the mesh-side processes widen the
+  # store's leader-election race at startup. test_support starts the
+  # division apps itself (see test_support.run).
   exec erl -noshell -config config/test.sys.config \
       -pa build/dev/erlang/*/ebin \
-      -eval "mcl_bookclub_gleam@@main:run('mcl_bookclub_gleam_test')."
+      -eval "mcl_bookclub_gleam_test:main()."
 }
 
 if command -v mise >/dev/null 2>&1; then

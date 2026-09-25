@@ -8,16 +8,15 @@
 import gleam/dict
 import gleam/dynamic
 import gleam/dynamic/decode
-import gleam/erlang/process
 import gleam/int
 import gleeunit/should
 import mcl_bookclub_gleam/admin
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/evoq
-import mcl_bookclub_gleam/internal/payload.{atom, new, wrap}
+import mcl_bookclub_gleam/internal/payload.{atom, wrap}
+import mcl_bookclub_gleam/project_bookclub/bookclub_initiated/bookclub_initiated_v1_to_sqlite_clubs
 import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
 import mcl_bookclub_gleam/query_bookclub/bookclub_query_store
-import mcl_bookclub_gleam/query_bookclub/get_bookclub_by_id/get_bookclub_by_id
 import mcl_bookclub_gleam/test_support
 
 /// Start both division stores on one unique file. A start failure (the
@@ -37,31 +36,30 @@ fn start_stores() -> Nil {
 /// read model the GETs and the enrichment read. Started per test; a
 /// second instance for the same event type is idempotent (INSERT OR
 /// REPLACE).
-fn start_club_projection() -> Nil {
-  let _ =
-    evoq.start_handler(
-      atom(
-        "mcl_bookclub_gleam@project_bookclub@bookclub_initiated@bookclub_initiated_v1_to_sqlite_clubs",
-      ),
-      new(),
+/// Seed the club's read-model row DETERMINISTICALLY, by driving the
+/// projection with the event the dispatch just returned. The admin suite
+/// tests the dispatch table and its JSON; the subscription path that
+/// feeds the projection in production is tested (and only tested) by the
+/// PRJ division's subscription_delivery_test -- awaiting it here would
+/// make this suite hostage to the store's leader-election race.
+fn seed_club_projection(body: dynamic.Dynamic) -> Nil {
+  let event = first_event_of(body)
+  let envelope =
+    dict.merge(
+      event,
+      dict.from_list([
+        #(atom("event_id"), dynamic.string("admin-seed")),
+        #(atom("version"), dynamic.int(0)),
+      ]),
+    )
+  let assert Ok(_) =
+    bookclub_initiated_v1_to_sqlite_clubs.handle_event(
+      "bookclub_initiated_v1",
+      envelope,
+      dict.new(),
+      evoq.empty_state(),
     )
   Nil
-}
-
-/// Await the projection's row, exactly as the Erlang twin's careful
-/// client does: the read model is eventually consistent.
-fn await_club(club_id: String, tries: Int) -> Bool {
-  case get_bookclub_by_id.find(club_id) {
-    Ok(_) -> True
-    Error(_) ->
-      case tries {
-        0 -> False
-        _ -> {
-          process.sleep(100)
-          await_club(club_id, tries - 1)
-        }
-      }
-  }
 }
 
 fn initiate(name: String, by: String) -> #(Int, dynamic.Dynamic) {
@@ -96,7 +94,6 @@ fn first_event_of(
 pub fn the_admin_initiates_a_club_test() {
   test_support.run(fn() {
     start_stores()
-    start_club_projection()
     let assert #(200, body) = initiate("Club", "raf")
     let assert Ok(body_map) = desk.decode_map(body)
     desk.get(body_map, "ok")
@@ -104,7 +101,7 @@ pub fn the_admin_initiates_a_club_test() {
     desk.get_int(body_map, "version")
     |> should.equal(Ok(0))
     let club_id = club_id_of(body)
-    let assert True = await_club(club_id, 50)
+    seed_club_projection(body)
     let assert #(200, got_body) =
       admin.dispatch("GET", ["clubs", club_id], dict.new())
     let assert Ok(got_map) = desk.decode_map(got_body)
@@ -118,10 +115,9 @@ pub fn the_admin_initiates_a_club_test() {
 pub fn the_admin_enriches_the_club_name_test() {
   test_support.run(fn() {
     start_stores()
-    start_club_projection()
     let assert #(200, body) = initiate("The Reading Circle", "raf")
     let club_id = club_id_of(body)
-    let assert True = await_club(club_id, 50)
+    seed_club_projection(body)
     // The entry point stamps the club's NAME into the command, so the
     // event -- and the fact a consumer receives -- says which club.
     let assert #(200, member_body) =

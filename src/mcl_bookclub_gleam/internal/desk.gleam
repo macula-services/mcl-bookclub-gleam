@@ -9,6 +9,7 @@
 import gleam/dict
 import gleam/dynamic
 import gleam/dynamic/decode
+import gleam/option.{type Option}
 import mcl_bookclub_gleam/internal/evoq
 import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
@@ -92,6 +93,32 @@ pub fn string_from_dynamic(
   case decode.run(value, decode.string) {
     Ok(string) -> Ok(string)
     Error(_) -> Error(invalid_params())
+  }
+}
+
+/// Coerce a dynamic cell (a sqlite column) to a String; a cell that is not
+/// a binary reads as the empty string.
+pub fn cell_string(value: dynamic.Dynamic, _field: String) -> String {
+  case string_from_dynamic(value) {
+    Ok(string) -> string
+    Error(_) -> ""
+  }
+}
+
+/// Coerce a dynamic cell (a sqlite column) to an Int; a cell that is not
+/// an integer reads as 0.
+pub fn cell_int(value: dynamic.Dynamic, _field: String) -> Int {
+  case decode.run(value, decode.int) {
+    Ok(int) -> int
+    Error(_) -> 0
+  }
+}
+
+/// A nullable integer cell: SQL NULL arrives as the atom `undefined'.
+pub fn cell_int_option(value: dynamic.Dynamic) -> Option(Int) {
+  case decode.run(value, decode.int) {
+    Ok(int) -> option.Some(int)
+    Error(_) -> option.None
   }
 }
 

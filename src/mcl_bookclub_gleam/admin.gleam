@@ -152,11 +152,19 @@ pub fn dispatch(
     "POST", ["books", "retire"] -> result(retire_book_api.handle(params))
     "POST", ["readings", "start"] -> result(start_reading_api.handle(params))
     "POST", ["readings", "finish"] -> result(finish_reading_api.handle(params))
-    "GET", ["clubs", id] -> found(get_bookclub_by_id.find(id))
-    "GET", ["members", id, "readings"] -> found(get_readings_by_member.find(id))
-    "GET", ["members", id] -> found(get_member_by_id.find(id))
-    "GET", ["books", id] -> found(get_book_by_id.find(id))
-    "GET", ["readings", id] -> found(get_reading_by_id.find(id))
+    "GET", ["clubs", id] ->
+      found(get_bookclub_by_id.find(id), get_bookclub_by_id.to_map)
+    "GET", ["members", id, "readings"] ->
+      found_list(
+        get_readings_by_member.find(id),
+        get_readings_by_member.to_maps,
+      )
+    "GET", ["members", id] ->
+      found(get_member_by_id.find(id), get_member_by_id.to_map)
+    "GET", ["books", id] ->
+      found(get_book_by_id.find(id), get_book_by_id.to_map)
+    "GET", ["readings", id] ->
+      found(get_reading_by_id.find(id), get_reading_by_id.to_map)
     _, _ -> #(404, wrap(dict.from_list([#(atom("error"), atom("not_found"))])))
   }
 }
@@ -183,11 +191,7 @@ fn enrich_from_club_id(params: Payload) -> Payload {
 fn stamp_club_name(params: Payload, club_id: String) -> Payload {
   case get_bookclub_by_id.find(club_id) {
     Ok(club) ->
-      dict.insert(
-        params,
-        atom("club_name"),
-        dynamic.string(desk.get_string_default(club, "name", "")),
-      )
+      dict.insert(params, atom("club_name"), dynamic.string(club.name))
     Error(_) -> params
   }
 }
@@ -219,19 +223,34 @@ fn result(dispatch_result: desk.DispatchResult) -> #(Int, dynamic.Dynamic) {
   }
 }
 
-fn found(find_result: Result(a, dynamic.Dynamic)) -> #(Int, dynamic.Dynamic) {
+fn found(
+  find_result: Result(a, dynamic.Dynamic),
+  to_map: fn(a) -> Payload,
+) -> #(Int, dynamic.Dynamic) {
   case find_result {
-    Ok(value) -> #(200, wrap(value))
-    Error(reason) -> #(
-      404,
-      wrap(
-        dict.from_list([
-          #(atom("ok"), dynamic.bool(False)),
-          #(atom("error"), reason),
-        ]),
-      ),
-    )
+    Ok(value) -> #(200, desk.payload_to_dynamic(to_map(value)))
+    Error(reason) -> #(404, wrap(not_found_body(reason)))
   }
+}
+
+fn found_list(
+  find_result: Result(List(a), dynamic.Dynamic),
+  to_maps: fn(List(a)) -> List(Payload),
+) -> #(Int, dynamic.Dynamic) {
+  case find_result {
+    Ok(values) -> #(
+      200,
+      dynamic.list(list.map(to_maps(values), desk.payload_to_dynamic)),
+    )
+    Error(reason) -> #(404, wrap(not_found_body(reason)))
+  }
+}
+
+fn not_found_body(reason: dynamic.Dynamic) -> Payload {
+  dict.from_list([
+    #(atom("ok"), dynamic.bool(False)),
+    #(atom("error"), reason),
+  ])
 }
 
 ///====================================================================

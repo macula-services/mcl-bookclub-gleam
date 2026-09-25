@@ -26,6 +26,7 @@
 -export([exact_name/1]).
 -export([publish/4]).
 -export([test_set_evoq_env/1, test_ensure_store/2, test_start_subscription/1,
+         test_start_division_apps/0,
          test_read_stream/2, test_source_files/1, file_read/1]).
 
 %%% evoq_command_router:dispatch/2 returns {ok, Version, [Event]} -- a
@@ -216,13 +217,22 @@ test_ensure_store(StoreId, DataDir) ->
         {error, Reason} -> {error, Reason}
     end.
 
+%%% The division apps only -- the twins' test env shape. Idempotent.
+test_start_division_apps() ->
+    Apps = [reckon_db, evoq, reckon_evoq, esqlite],
+    case application:ensure_all_started(Apps) of
+        {ok, _} -> {ok, nil};
+        {error, {App, Reason}} -> {error, {App, Reason}}
+    end.
+
 %%% The store subscription, unlinked from the test process. One per store:
-%%% a later suite's start finds it already running.
+%%% a later suite's start finds it already running. The tag tells the
+%%% caller whether THIS call started it.
 test_start_subscription(StoreId) ->
     case evoq_store_subscription:start_link(StoreId) of
         {ok, Sub} ->
             unlink(Sub),
-            {ok, Sub};
+            {ok, started};
         {error, {already_started, _}} ->
             {ok, already_running};
         {error, Reason} ->

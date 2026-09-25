@@ -16,12 +16,12 @@ import gleam/dynamic
 import gleam/erlang/process
 import gleam/int
 import gleam/list
+import gleam/option
 import gleeunit/should
 import mcl_bookclub_gleam/host_bookclub/book_status
 import mcl_bookclub_gleam/host_bookclub/bookclub_status
 import mcl_bookclub_gleam/host_bookclub/member_status
 import mcl_bookclub_gleam/host_bookclub/reading_status
-import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/evoq
 import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{type Payload, atom, wrap}
@@ -200,12 +200,12 @@ pub fn get_bookclub_by_id_finds_a_seeded_club_test() {
   ensure_stores()
   let club_id = seed_club("The Crooked Shelf", 42)
   let assert Ok(club) = get_bookclub_by_id.find(club_id)
-  desk.get_string(club, "club_id") |> should.equal(Ok(club_id))
-  desk.get_string(club, "name") |> should.equal(Ok("The Crooked Shelf"))
-  desk.get_string(club, "status")
-  |> should.equal(Ok(bookclub_status.to_string(bookclub_status.initiated())))
-  desk.get_string(club, "initiated_by") |> should.equal(Ok("bea"))
-  desk.get_int(club, "initiated_at") |> should.equal(Ok(42))
+  club.club_id |> should.equal(club_id)
+  club.name |> should.equal("The Crooked Shelf")
+  club.status
+  |> should.equal(bookclub_status.to_string(bookclub_status.initiated()))
+  club.initiated_by |> should.equal("bea")
+  club.initiated_at |> should.equal(42)
 }
 
 pub fn get_bookclub_by_id_says_not_found_for_an_unknown_club_test() {
@@ -218,12 +218,11 @@ pub fn get_member_by_id_finds_a_seeded_member_test() {
   ensure_stores()
   let member_id = seed_member("Bea", 200)
   let assert Ok(member) = get_member_by_id.find(member_id)
-  desk.get_string(member, "member_id") |> should.equal(Ok(member_id))
-  desk.get_string(member, "club_id") |> should.be_ok
-  desk.get_string(member, "name") |> should.equal(Ok("Bea"))
-  desk.get_string(member, "status")
-  |> should.equal(Ok(member_status.to_string(member_status.registered())))
-  desk.get_int(member, "registered_at") |> should.equal(Ok(200))
+  member.member_id |> should.equal(member_id)
+  member.name |> should.equal("Bea")
+  member.status
+  |> should.equal(member_status.to_string(member_status.registered()))
+  member.registered_at |> should.equal(200)
 }
 
 pub fn get_member_by_id_says_not_found_for_an_unknown_member_test() {
@@ -236,13 +235,11 @@ pub fn get_book_by_id_finds_a_seeded_book_test() {
   ensure_stores()
   let book_id = seed_book("The Hobbit", "J.R.R. Tolkien", 300)
   let assert Ok(book) = get_book_by_id.find(book_id)
-  desk.get_string(book, "book_id") |> should.equal(Ok(book_id))
-  desk.get_string(book, "club_id") |> should.be_ok
-  desk.get_string(book, "title") |> should.equal(Ok("The Hobbit"))
-  desk.get_string(book, "author") |> should.equal(Ok("J.R.R. Tolkien"))
-  desk.get_string(book, "status")
-  |> should.equal(Ok(book_status.to_string(book_status.on_shelf())))
-  desk.get_int(book, "procured_at") |> should.equal(Ok(300))
+  book.book_id |> should.equal(book_id)
+  book.title |> should.equal("The Hobbit")
+  book.author |> should.equal("J.R.R. Tolkien")
+  book.status |> should.equal(book_status.to_string(book_status.on_shelf()))
+  book.procured_at |> should.equal(300)
 }
 
 pub fn get_book_by_id_says_not_found_for_an_unknown_book_test() {
@@ -256,16 +253,14 @@ pub fn get_reading_by_id_finds_a_seeded_reading_test() {
   let reading_id =
     seed_reading(ids.mint_stream_id("member"), ids.mint_stream_id("book"), 100)
   let assert Ok(reading) = get_reading_by_id.find(reading_id)
-  desk.get_string(reading, "reading_id") |> should.equal(Ok(reading_id))
-  desk.get_string(reading, "member_id") |> should.be_ok
-  desk.get_string(reading, "book_id") |> should.be_ok
-  desk.get_string(reading, "status")
-  |> should.equal(Ok(reading_status.to_string(reading_status.in_progress())))
-  desk.get_int(reading, "started_at") |> should.equal(Ok(100))
-  desk.get_int(reading, "pages_read") |> should.equal(Ok(0))
+  reading.reading_id |> should.equal(reading_id)
+  reading.status
+  |> should.equal(reading_status.to_string(reading_status.in_progress()))
+  reading.started_at |> should.equal(100)
+  reading.pages_read |> should.equal(0)
   // A fresh reading has no finished_at: SQL NULL arrives as the atom
   // `undefined`.
-  desk.get(reading, "finished_at") |> should.equal(Ok(atom("undefined")))
+  reading.finished_at |> should.equal(option.None)
 }
 
 pub fn get_reading_by_id_says_not_found_for_an_unknown_reading_test() {
@@ -282,8 +277,8 @@ pub fn get_readings_by_member_returns_them_oldest_first_test() {
   let assert Ok(readings) = get_readings_by_member.find(member_id)
   readings |> list.length |> should.equal(2)
   let assert [first, second] = readings
-  desk.get_int(first, "started_at") |> should.equal(Ok(100))
-  desk.get_int(second, "started_at") |> should.equal(Ok(200))
+  first.started_at |> should.equal(100)
+  second.started_at |> should.equal(200)
 }
 
 pub fn get_readings_by_member_returns_none_for_a_member_without_readings_test() {

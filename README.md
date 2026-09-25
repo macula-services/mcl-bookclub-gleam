@@ -77,6 +77,30 @@ the `skip`-policy emitters.
 - Facts are read with `mcl_om_wire:field/2` (Demon 65); text travels as CBOR
   text, booleans as 1/0.
 
+## Where `dynamic.Dynamic` lives, and why
+
+Gleam is a typed language, and the domain is fully typed: commands, events,
+aggregate states and the QRY desks' results are all records. `Dynamic`
+appears in exactly three places, and each is a deliberate boundary:
+
+1. **The evoq envelope.** evoq hands the aggregate a *map* for `execute/2`
+   and `apply/2` and the handler a map for `handle_event/4` — atom keys in
+   memory, binary keys from the store, `{text, Bin}` on the wire. Tolerance
+   is part of the contract (Demon 65), so `Payload = Dict(Dynamic, Dynamic)`
+   at that boundary, converted to typed values the moment a desk reads it.
+2. **The sqlite cell.** Rows are lists of cells; SQL NULL is the atom
+   `undefined`. The QRY desks coerce each cell to a typed field
+   (`desk.cell_string`, `desk.cell_int`, `desk.cell_int_option`) and return
+   typed records — `Dynamic` never leaves the store module.
+3. **The wire.** `mcl_om_wire:field/2` and `facts.to_wire` read and write
+   wire-shaped terms; the facade converts between the typed desks and the
+   wire in one place per capability.
+
+The alternative — modeling heterogeneous Erlang terms as Gleam types —
+would be a facade over a facade; the corpus's "no wrapper" convention says
+call Erlang directly, and the typed boundary above is where that call is
+contained.
+
 ## Building and testing
 
 ```sh

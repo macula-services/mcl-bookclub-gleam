@@ -44,6 +44,11 @@ pub fn a_member_registration_is_projected_through_the_subscription_test() {
         ),
         new(),
       )
+    // The handler's event-type registry membership (a pg group) must be
+    // visible to the subscription's router before the first dispatch; the
+    // twins start their handlers in a supervisor long before any command
+    // runs, this test starts its handler moments before its first one.
+    process.sleep(200)
     // A real club, then a real member, through the real entry points --
     // the events flow through the store subscription, not through any
     // direct handle_event call.
@@ -63,7 +68,9 @@ pub fn a_member_registration_is_projected_through_the_subscription_test() {
         ]),
       )
     let assert Ok(member_id) = desk.get_string(member_event, "member_id")
-    await_member_name(member_id, 100)
+    // The delivery pipeline was proven by test_support's warm-up, so this
+    // await is about the projection's own latency, not the startup race.
+    await_member_name(member_id, 150)
     |> should.equal("Bea")
   })
 }
