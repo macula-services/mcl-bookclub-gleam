@@ -61,9 +61,9 @@ pub fn start_listener() -> Result(process.Pid, dynamic.Dynamic) {
   let protocol_opts =
     dynamic.properties([
       #(
-        dynamic.string("env"),
+        atom("env"),
         dynamic.properties([
-          #(dynamic.string("dispatch"), dispatch),
+          #(atom("dispatch"), dispatch),
         ]),
       ),
     ])
