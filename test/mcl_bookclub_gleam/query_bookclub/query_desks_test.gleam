@@ -17,18 +17,17 @@ import gleam/erlang/process
 import gleam/int
 import gleam/list
 import gleeunit/should
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/evoq
-import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload, wrap}
-import mcl_bookclub_gleam/test_support
 import mcl_bookclub_gleam/host_bookclub/book_status
 import mcl_bookclub_gleam/host_bookclub/bookclub_status
 import mcl_bookclub_gleam/host_bookclub/member_status
 import mcl_bookclub_gleam/host_bookclub/reading_status
-import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
-import mcl_bookclub_gleam/project_bookclub/bookclub_initiated/bookclub_initiated_v1_to_sqlite_clubs
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/evoq
+import mcl_bookclub_gleam/internal/ids
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom, wrap}
 import mcl_bookclub_gleam/project_bookclub/book_procured/book_procured_v1_to_sqlite_books
+import mcl_bookclub_gleam/project_bookclub/bookclub_initiated/bookclub_initiated_v1_to_sqlite_clubs
+import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
 import mcl_bookclub_gleam/project_bookclub/member_registered/member_registered_v1_to_sqlite_members
 import mcl_bookclub_gleam/project_bookclub/reading_started/reading_started_v1_to_sqlite_readings
 import mcl_bookclub_gleam/query_bookclub/bookclub_query_store
@@ -37,6 +36,7 @@ import mcl_bookclub_gleam/query_bookclub/get_bookclub_by_id/get_bookclub_by_id
 import mcl_bookclub_gleam/query_bookclub/get_member_by_id/get_member_by_id
 import mcl_bookclub_gleam/query_bookclub/get_reading_by_id/get_reading_by_id
 import mcl_bookclub_gleam/query_bookclub/get_readings_by_member/get_readings_by_member
+import mcl_bookclub_gleam/test_support
 
 /// The Erlang whereis: the atom `undefined` when the name is free.
 @external(erlang, "erlang", "whereis")
@@ -49,7 +49,10 @@ fn unlink_process(pid: dynamic.Dynamic) -> dynamic.Dynamic
 
 /// The Erlang exit/2: an untrappable kill signal.
 @external(erlang, "erlang", "exit")
-fn exit_process(pid: dynamic.Dynamic, reason: dynamic.Dynamic) -> dynamic.Dynamic
+fn exit_process(
+  pid: dynamic.Dynamic,
+  reason: dynamic.Dynamic,
+) -> dynamic.Dynamic
 
 fn store_path() -> String {
   "/tmp/mcl_bookclub_gleam_prj_tests/"
@@ -126,7 +129,12 @@ fn seed_club(name: String, initiated_at: Int) -> String {
       #(atom("initiated_at"), dynamic.int(initiated_at)),
     ])
   let assert Ok(_) =
-    bookclub_initiated_v1_to_sqlite_clubs.handle_event("", event, dict.new(), evoq.empty_state())
+    bookclub_initiated_v1_to_sqlite_clubs.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
   club_id
 }
 
@@ -140,7 +148,12 @@ fn seed_member(name: String, registered_at: Int) -> String {
       #(atom("registered_at"), dynamic.int(registered_at)),
     ])
   let assert Ok(_) =
-    member_registered_v1_to_sqlite_members.handle_event("", event, dict.new(), evoq.empty_state())
+    member_registered_v1_to_sqlite_members.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
   member_id
 }
 
@@ -155,7 +168,12 @@ fn seed_book(title: String, author: String, procured_at: Int) -> String {
       #(atom("procured_at"), dynamic.int(procured_at)),
     ])
   let assert Ok(_) =
-    book_procured_v1_to_sqlite_books.handle_event("", event, dict.new(), evoq.empty_state())
+    book_procured_v1_to_sqlite_books.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
   book_id
 }
 
@@ -169,7 +187,12 @@ fn seed_reading(member_id: String, book_id: String, started_at: Int) -> String {
       #(atom("started_at"), dynamic.int(started_at)),
     ])
   let assert Ok(_) =
-    reading_started_v1_to_sqlite_readings.handle_event("", event, dict.new(), evoq.empty_state())
+    reading_started_v1_to_sqlite_readings.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
   reading_id
 }
 

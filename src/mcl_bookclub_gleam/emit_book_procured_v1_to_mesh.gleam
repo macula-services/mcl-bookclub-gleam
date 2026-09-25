@@ -4,11 +4,11 @@
 //// retry machinery owns redelivery).
 
 import gleam/dynamic
+import mcl_bookclub_gleam/facts
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/evoq
 import mcl_bookclub_gleam/internal/mesh
 import mcl_bookclub_gleam/internal/payload.{type Payload}
-import mcl_bookclub_gleam/facts
 
 pub fn interested_in() -> List(String) {
   ["book_procured_v1"]
@@ -29,7 +29,11 @@ pub fn handle_event(
   state: dynamic.Dynamic,
 ) -> Result(dynamic.Dynamic, dynamic.Dynamic) {
   let data = desk.event_data(event)
-  publish(facts.to_wire_payload(facts.book_procured(data)), facts.BookProcured, state)
+  publish(
+    facts.to_wire_payload(facts.book_procured(data)),
+    facts.BookProcured,
+    state,
+  )
 }
 
 fn publish(

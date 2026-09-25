@@ -8,13 +8,10 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type FinishReading {
-  FinishReading(
-    reading_id: String,
-    pages_read: Int,
-  )
+  FinishReading(reading_id: String, pages_read: Int)
 }
 
 /// The command's type atom -- the same atom to_map/1 stamps into the
@@ -33,7 +30,8 @@ pub fn new(params: Payload) -> Result(FinishReading, dynamic.Dynamic) {
       case desk.get_int(params, "pages_read") {
         Ok(pages_read) ->
           case reading_id != "" && pages_read >= 0 {
-            True -> Ok(FinishReading(reading_id: reading_id, pages_read: pages_read))
+            True ->
+              Ok(FinishReading(reading_id: reading_id, pages_read: pages_read))
             False -> Error(desk.invalid_params())
           }
         Error(e) -> Error(e)

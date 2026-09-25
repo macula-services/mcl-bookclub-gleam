@@ -10,7 +10,7 @@ import gleam/dynamic
 import gleam/erlang/process
 import gleam/otp/actor
 import gleam/string
-import mcl_bookclub_gleam/internal/payload.{atom, new, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom, new}
 
 /// Build an evoq command addressed at a stream. `command_type` and
 /// `aggregate_type` are the Erlang module atoms of our own Gleam modules;
@@ -55,7 +55,6 @@ pub fn store_id_atom() -> dynamic.Dynamic {
 /// evoq_bit_flags: the bit-mask state the aggregates fold and the status
 /// modules render readable (Demon 68: the flag map lives in the status
 /// module; a projection spelling a status literal is refused by test).
-
 @external(erlang, "evoq_bit_flags", "set")
 pub fn bit_set(flags: Int, flag: Int) -> Int
 

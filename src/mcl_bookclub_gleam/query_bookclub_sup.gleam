@@ -9,11 +9,16 @@ import gleam/otp/supervision
 import mcl_bookclub_gleam/internal/data_dir
 import mcl_bookclub_gleam/query_bookclub/bookclub_query_store
 
-pub fn start() -> Result(actor.Started(static_supervisor.Supervisor), actor.StartError) {
+pub fn start() -> Result(
+  actor.Started(static_supervisor.Supervisor),
+  actor.StartError,
+) {
   static_supervisor.new(static_supervisor.OneForOne)
   |> static_supervisor.restart_tolerance(5, 10)
-  |> static_supervisor.add(supervision.worker(fn() {
-    bookclub_query_store.start(data_dir.sqlite_path())
-  }))
+  |> static_supervisor.add(
+    supervision.worker(fn() {
+      bookclub_query_store.start(data_dir.sqlite_path())
+    }),
+  )
   |> static_supervisor.start
 }

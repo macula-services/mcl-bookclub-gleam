@@ -7,22 +7,23 @@
 import gleam/dict
 import gleam/dynamic
 import gleeunit/should
+import mcl_bookclub_gleam/host_bookclub/archive_bookclub/archive_bookclub_api
+import mcl_bookclub_gleam/host_bookclub/bookclub_state
+import mcl_bookclub_gleam/host_bookclub/initiate_bookclub/initiate_bookclub_api
+import mcl_bookclub_gleam/host_bookclub/plan_party/maybe_plan_party
+import mcl_bookclub_gleam/host_bookclub/plan_party/plan_party_v1
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom}
 import mcl_bookclub_gleam/test_support
-import mcl_bookclub_gleam/host_bookclub/bookclub_state
-import mcl_bookclub_gleam/host_bookclub/archive_bookclub/archive_bookclub_api
-import mcl_bookclub_gleam/host_bookclub/initiate_bookclub/initiate_bookclub_api
-import mcl_bookclub_gleam/host_bookclub/plan_party/maybe_plan_party
-import mcl_bookclub_gleam/host_bookclub/plan_party/plan_party_v1
 
 /// Initiate a club through the real entry point and return its id.
 fn initiated_club() -> String {
-  let params = dict.from_list([
-    #(atom("name"), dynamic.string("The Crooked Shelf")),
-    #(atom("initiated_by"), dynamic.string("bea")),
-  ])
+  let params =
+    dict.from_list([
+      #(atom("name"), dynamic.string("The Crooked Shelf")),
+      #(atom("initiated_by"), dynamic.string("bea")),
+    ])
   let assert Ok(#(0, [event])) = initiate_bookclub_api.handle(params)
   desk.get_string(event, "club_id")
   |> should.be_ok
@@ -31,10 +32,14 @@ fn initiated_club() -> String {
 }
 
 /// The plan_party_v1 command names the club's stream id and nothing else.
-fn plan_party(club_id: String) -> Result(plan_party_v1.PlanParty, dynamic.Dynamic) {
-  plan_party_v1.new(dict.from_list([
-    #(atom("club_id"), dynamic.string(club_id)),
-  ]))
+fn plan_party(
+  club_id: String,
+) -> Result(plan_party_v1.PlanParty, dynamic.Dynamic) {
+  plan_party_v1.new(
+    dict.from_list([
+      #(atom("club_id"), dynamic.string(club_id)),
+    ]),
+  )
 }
 
 pub fn a_party_is_planned_with_the_incremented_count_test() {
@@ -75,10 +80,12 @@ pub fn a_party_for_an_archived_club_is_refused_test() {
   test_support.run(fn() {
     let club_id = initiated_club()
     let assert Ok(_) =
-      archive_bookclub_api.handle(dict.from_list([
-        #(atom("club_id"), dynamic.string(club_id)),
-        #(atom("archived_by"), dynamic.string("raf")),
-      ]))
+      archive_bookclub_api.handle(
+        dict.from_list([
+          #(atom("club_id"), dynamic.string(club_id)),
+          #(atom("archived_by"), dynamic.string("raf")),
+        ]),
+      )
     let assert Ok(command) = plan_party(club_id)
     maybe_plan_party.dispatch(command)
     |> should.equal(Error(atom("archived")))
@@ -90,23 +97,31 @@ pub fn a_party_for_an_archived_club_is_refused_test() {
 pub fn the_state_folds_the_party_event_test() {
   let state =
     bookclub_state.new("club-3")
-    |> bookclub_state.apply_event(dict.from_list([
-      #(atom("event_type"), dynamic.string("bookclub_initiated_v1")),
-      #(atom("name"), dynamic.string("N")),
-      #(atom("initiated_by"), dynamic.string("bea")),
-      #(atom("initiated_at"), dynamic.int(5)),
-    ]))
+    |> bookclub_state.apply_event(
+      dict.from_list([
+        #(atom("event_type"), dynamic.string("bookclub_initiated_v1")),
+        #(atom("name"), dynamic.string("N")),
+        #(atom("initiated_by"), dynamic.string("bea")),
+        #(atom("initiated_at"), dynamic.int(5)),
+      ]),
+    )
   bookclub_state.parties_planned(state) |> should.equal(0)
   let state2 =
-    bookclub_state.apply_event(state, dict.from_list([
-      #(atom("event_type"), dynamic.string("party_planned_v1")),
-      #(atom("parties_planned"), dynamic.int(3)),
-    ]))
+    bookclub_state.apply_event(
+      state,
+      dict.from_list([
+        #(atom("event_type"), dynamic.string("party_planned_v1")),
+        #(atom("parties_planned"), dynamic.int(3)),
+      ]),
+    )
   bookclub_state.parties_planned(state2) |> should.equal(3)
   let state3 =
-    bookclub_state.apply_event(state2, dict.from_list([
-      #(atom("event_type"), dynamic.string("party_planned_v1")),
-      #(atom("parties_planned"), dynamic.int(3)),
-    ]))
+    bookclub_state.apply_event(
+      state2,
+      dict.from_list([
+        #(atom("event_type"), dynamic.string("party_planned_v1")),
+        #(atom("parties_planned"), dynamic.int(3)),
+      ]),
+    )
   bookclub_state.parties_planned(state3) |> should.equal(3)
 }

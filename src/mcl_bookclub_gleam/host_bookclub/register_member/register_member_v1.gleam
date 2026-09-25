@@ -8,7 +8,7 @@ import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type RegisterMember {
   RegisterMember(
@@ -36,7 +36,8 @@ pub fn mint_member_id() -> String {
 /// The command's payload: required fields are binaries, club_name
 /// defaults to the empty binary (the entry point stamps it in later).
 pub fn new(params: Payload) -> Result(RegisterMember, dynamic.Dynamic) {
-  case desk.get_string(params, "member_id"),
+  case
+    desk.get_string(params, "member_id"),
     desk.get_string(params, "club_id"),
     desk.get_string(params, "name")
   {

@@ -23,10 +23,12 @@ import gleam/dynamic/decode
 import gleam/list
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/mesh
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload, wrap}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom, wrap}
 
 const org = "mcl-bookclub"
+
 const domain = "bookclub"
+
 const version = 1
 
 /// The three fact kinds: one topic per kind.
@@ -36,8 +38,23 @@ pub type FactKind {
   BookRetired
 }
 
-const member_fields = ["member_id", "club_id", "club_name", "name", "registered_at"]
-const book_fields = ["book_id", "club_id", "club_name", "title", "author", "procured_at"]
+const member_fields = [
+  "member_id",
+  "club_id",
+  "club_name",
+  "name",
+  "registered_at",
+]
+
+const book_fields = [
+  "book_id",
+  "club_id",
+  "club_name",
+  "title",
+  "author",
+  "procured_at",
+]
+
 const retired_fields = [
   "book_id",
   "club_id",
@@ -66,9 +83,11 @@ pub fn book_retired(event: Payload) -> Payload {
 }
 
 fn build(event: Payload, fields: List(String)) -> Payload {
-  dict.from_list(list.map(fields, fn(field) {
-    #(dynamic.string(field), mesh.field(dynamic.string(field), event))
-  }))
+  dict.from_list(
+    list.map(fields, fn(field) {
+      #(dynamic.string(field), mesh.field(dynamic.string(field), event))
+    }),
+  )
 }
 
 /// Text as CBOR text, booleans as 1/0, numbers as they are -- applied to
@@ -86,7 +105,9 @@ pub fn to_wire(value: dynamic.Dynamic) -> dynamic.Dynamic {
             Error(_) ->
               case desk.decode_map(value) {
                 Ok(map) ->
-                  desk.payload_to_dynamic(dict.map_values(map, fn(_key, value) { to_wire(value) }))
+                  desk.payload_to_dynamic(
+                    dict.map_values(map, fn(_key, value) { to_wire(value) }),
+                  )
                 Error(_) -> value
               }
           }
@@ -104,11 +125,32 @@ pub fn to_wire_payload(fact: Payload) -> Payload {
 pub fn topic(realm_name: String, kind: FactKind) -> String {
   case kind {
     MemberRegistered ->
-      mesh.app_fact_topic(realm_name, org, domain, "member", "member_registered", version)
+      mesh.app_fact_topic(
+        realm_name,
+        org,
+        domain,
+        "member",
+        "member_registered",
+        version,
+      )
     BookProcured ->
-      mesh.app_fact_topic(realm_name, org, domain, "book", "book_procured", version)
+      mesh.app_fact_topic(
+        realm_name,
+        org,
+        domain,
+        "book",
+        "book_procured",
+        version,
+      )
     BookRetired ->
-      mesh.app_fact_topic(realm_name, org, domain, "book", "book_retired", version)
+      mesh.app_fact_topic(
+        realm_name,
+        org,
+        domain,
+        "book",
+        "book_retired",
+        version,
+      )
   }
 }
 

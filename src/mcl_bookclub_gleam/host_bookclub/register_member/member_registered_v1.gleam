@@ -8,7 +8,7 @@ import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type MemberRegistered {
   MemberRegistered(
@@ -27,7 +27,8 @@ pub fn event_type() -> String {
 }
 
 pub fn new(params: Payload) -> Result(MemberRegistered, dynamic.Dynamic) {
-  case desk.get_string(params, "member_id"),
+  case
+    desk.get_string(params, "member_id"),
     desk.get_string(params, "club_id"),
     desk.get_string(params, "name")
   {

@@ -10,10 +10,10 @@
 
 import gleam/dict
 import gleam/dynamic
+import mcl_bookclub_gleam/facade_supervisor
 import mcl_bookclub_gleam/internal/data_dir
 import mcl_bookclub_gleam/internal/health
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload, wrap}
-import mcl_bookclub_gleam/facade_supervisor
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom, wrap}
 import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
 import mcl_bookclub_gleam/query_bookclub/bookclub_query_store
 
@@ -51,19 +51,25 @@ pub fn stop(_state: dynamic.Dynamic) -> dynamic.Dynamic {
 /// try gen_server:call(Name, ping, 1000) becomes the FFI's safe_ping/2 --
 /// whereis, monitor, ask, and an honest answer either way.
 pub fn health() -> dynamic.Dynamic {
-  case health.safe_ping(bookclub_read_model_store.name(), 1000),
+  case
+    health.safe_ping(bookclub_read_model_store.name(), 1000),
     health.safe_ping(bookclub_query_store.name(), 1000)
   {
     Ok(_), Ok(_) -> atom("ok")
     read_model, query ->
-      wrap(#(atom("degraded"), dict.from_list([
-        #(atom("read_model_store"), ping_term(read_model)),
-        #(atom("query_store"), ping_term(query)),
-      ])))
+      wrap(#(
+        atom("degraded"),
+        dict.from_list([
+          #(atom("read_model_store"), ping_term(read_model)),
+          #(atom("query_store"), ping_term(query)),
+        ]),
+      ))
   }
 }
 
-fn ping_term(result: Result(dynamic.Dynamic, dynamic.Dynamic)) -> dynamic.Dynamic {
+fn ping_term(
+  result: Result(dynamic.Dynamic, dynamic.Dynamic),
+) -> dynamic.Dynamic {
   case result {
     Ok(reply) -> reply
     Error(reason) -> reason

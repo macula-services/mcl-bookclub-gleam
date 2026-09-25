@@ -10,14 +10,10 @@ import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type StartReading {
-  StartReading(
-    reading_id: String,
-    member_id: String,
-    book_id: String,
-  )
+  StartReading(reading_id: String, member_id: String, book_id: String)
 }
 
 /// The command's type atom -- the same atom to_map/1 stamps into the
@@ -37,7 +33,8 @@ pub fn mint_reading_id() -> String {
 /// The command's payload: the reading, the member, and the book -- all
 /// three required, none may be empty.
 pub fn new(params: Payload) -> Result(StartReading, dynamic.Dynamic) {
-  case desk.get_string(params, "reading_id"),
+  case
+    desk.get_string(params, "reading_id"),
     desk.get_string(params, "member_id"),
     desk.get_string(params, "book_id")
   {

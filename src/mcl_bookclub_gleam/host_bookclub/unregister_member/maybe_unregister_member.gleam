@@ -8,15 +8,16 @@
 
 import gleam/dict
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 import mcl_bookclub_gleam/host_bookclub/member_state
 import mcl_bookclub_gleam/host_bookclub/unregister_member/member_unregistered_v1
 import mcl_bookclub_gleam/host_bookclub/unregister_member/unregister_member_v1
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// The Erlang module atoms of this desk's own modules -- evoq addresses
 /// the command by these.
 pub const command_module = "mcl_bookclub_gleam@host_bookclub@unregister_member@unregister_member_v1"
+
 pub const aggregate_module = "mcl_bookclub_gleam@host_bookclub@member_aggregate"
 
 /// The command's payload as evoq hands it to the aggregate: the map
@@ -53,16 +54,20 @@ fn events(
   state: member_state.MemberState,
   command: unregister_member_v1.UnregisterMember,
 ) -> desk.DeskResult {
-  case member_unregistered_v1.new(dict.from_list([
-    #(atom("member_id"), dynamic.string(member_state.member_id(state))),
-    #(atom("club_id"), dynamic.string(member_state.club_id(state))),
-    #(atom("name"), dynamic.string(member_state.name(state))),
-    #(atom("registered_at"), dynamic.int(member_state.registered_at(state))),
-    #(
-      atom("unregistered_by"),
-      dynamic.string(unregister_member_v1.get_unregistered_by(command)),
-    ),
-  ])) {
+  case
+    member_unregistered_v1.new(
+      dict.from_list([
+        #(atom("member_id"), dynamic.string(member_state.member_id(state))),
+        #(atom("club_id"), dynamic.string(member_state.club_id(state))),
+        #(atom("name"), dynamic.string(member_state.name(state))),
+        #(atom("registered_at"), dynamic.int(member_state.registered_at(state))),
+        #(
+          atom("unregistered_by"),
+          dynamic.string(unregister_member_v1.get_unregistered_by(command)),
+        ),
+      ]),
+    )
+  {
     Ok(event) -> Ok([member_unregistered_v1.to_map(event)])
     Error(e) -> Error(e)
   }
@@ -74,7 +79,9 @@ fn events(
 /// VALIDATION HAPPENS HERE, BEFORE DISPATCH, AND THAT IS LOAD-BEARING:
 /// the store client RAISES on a bad id, so the desk is the boundary -- it
 /// validates, then dispatches (Demon 67).
-pub fn dispatch(command: unregister_member_v1.UnregisterMember) -> desk.DispatchResult {
+pub fn dispatch(
+  command: unregister_member_v1.UnregisterMember,
+) -> desk.DispatchResult {
   case unregister_member_v1.validate(command) {
     Ok(_) ->
       desk.dispatch_command(

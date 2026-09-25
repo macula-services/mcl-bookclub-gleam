@@ -3,10 +3,10 @@
 //// Pure, like every entry point here: params in, dispatch result out. The
 //// club id is REQUIRED -- an archive names an existing club.
 
+import mcl_bookclub_gleam/host_bookclub/archive_bookclub/archive_bookclub_v1
+import mcl_bookclub_gleam/host_bookclub/archive_bookclub/maybe_archive_bookclub
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/payload.{type Payload}
-import mcl_bookclub_gleam/host_bookclub/archive_bookclub/maybe_archive_bookclub
-import mcl_bookclub_gleam/host_bookclub/archive_bookclub/archive_bookclub_v1
 
 /// Params arrive atom-keyed (the facade JSON-decodes with atom labels).
 /// Both fields are REQUIRED: an archive names an existing club and who

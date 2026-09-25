@@ -7,9 +7,9 @@
 import gleam/dict
 import gleam/dynamic
 import gleeunit/should
+import mcl_bookclub_gleam/facts
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/payload.{atom, wrap}
-import mcl_bookclub_gleam/facts
 
 fn member_event() -> dict.Dict(dynamic.Dynamic, dynamic.Dynamic) {
   dict.from_list([
@@ -101,16 +101,22 @@ pub fn the_wire_shapes_booleans_as_one_and_zero_test() {
 }
 
 pub fn the_wire_shapes_maps_recursively_test() {
-  facts.to_wire(dynamic.properties([
-    #(dynamic.string("a"), dynamic.string("b")),
-  ]))
-  |> should.equal(dynamic.properties([
-    #(dynamic.string("a"), wrap(#(atom("text"), dynamic.string("b")))),
-  ]))
+  facts.to_wire(
+    dynamic.properties([
+      #(dynamic.string("a"), dynamic.string("b")),
+    ]),
+  )
+  |> should.equal(
+    dynamic.properties([
+      #(dynamic.string("a"), wrap(#(atom("text"), dynamic.string("b")))),
+    ]),
+  )
   let result =
-    facts.to_wire_payload(dict.from_list([
-      #(atom("k"), dynamic.string("v")),
-    ]))
+    facts.to_wire_payload(
+      dict.from_list([
+        #(atom("k"), dynamic.string("v")),
+      ]),
+    )
   desk.get(result, "k")
   |> should.equal(Ok(wrap(#(atom("text"), dynamic.string("v")))))
 }

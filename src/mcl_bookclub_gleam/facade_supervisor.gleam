@@ -13,11 +13,14 @@ import gleam/otp/actor
 import gleam/otp/static_supervisor
 import gleam/otp/supervision
 import gleam/string
+import mcl_bookclub_gleam/admin
 import mcl_bookclub_gleam/internal/evoq
 import mcl_bookclub_gleam/internal/payload.{atom, new}
-import mcl_bookclub_gleam/admin
 
-pub fn start() -> Result(actor.Started(static_supervisor.Supervisor), actor.StartError) {
+pub fn start() -> Result(
+  actor.Started(static_supervisor.Supervisor),
+  actor.StartError,
+) {
   static_supervisor.new(static_supervisor.OneForOne)
   |> static_supervisor.restart_tolerance(5, 10)
   |> static_supervisor.add(supervision.worker(admin_listener_start))
@@ -48,6 +51,8 @@ fn admin_listener_start() -> Result(actor.Started(Nil), actor.StartError) {
 
 /// The admin listener's pid is a process pid -- exported for tests that
 /// read the port back.
-pub fn admin_pid(started: actor.Started(static_supervisor.Supervisor)) -> process.Pid {
+pub fn admin_pid(
+  started: actor.Started(static_supervisor.Supervisor),
+) -> process.Pid {
   started.pid
 }

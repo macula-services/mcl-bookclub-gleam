@@ -9,13 +9,13 @@ import gleam/dict
 import gleam/dynamic
 import gleam/int
 import gleeunit/should
+import mcl_bookclub_gleam/facts
+import mcl_bookclub_gleam/get_bookclub_by_id
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
 import mcl_bookclub_gleam/internal/payload.{atom, wrap}
 import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
 import mcl_bookclub_gleam/query_bookclub/bookclub_query_store
-import mcl_bookclub_gleam/facts
-import mcl_bookclub_gleam/get_bookclub_by_id
 import mcl_bookclub_gleam/test_support
 
 /// Start both division stores on one unique file. A start failure (the
@@ -37,7 +37,7 @@ fn seed_club(club_id: String) -> Nil {
   let assert Ok(_) =
     bookclub_read_model_store.exec(
       "INSERT INTO clubs (club_id, name, status, initiated_by, initiated_at, event_id, version)"
-      <> " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        <> " VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         dynamic.string(club_id),
         dynamic.string("The Club"),
@@ -64,9 +64,9 @@ fn expected_reply(club_id: String) -> dynamic.Dynamic {
     ])
   wrap(#(
     atom("reply"),
-    desk.payload_to_dynamic(dict.map_values(club_payload, fn(_key, value) {
-      facts.to_wire(value)
-    })),
+    desk.payload_to_dynamic(
+      dict.map_values(club_payload, fn(_key, value) { facts.to_wire(value) }),
+    ),
     atom("undefined"),
   ))
 }
@@ -107,7 +107,9 @@ pub fn the_handler_reads_binary_and_text_keys_test() {
   |> should.equal(expected_reply(club_id))
   // An atom key whose value arrives CBOR-text-wrapped.
   get_bookclub_by_id.handle_request(
-    dict.from_list([#(atom("club_id"), wrap(#(atom("text"), dynamic.string(club_id))))]),
+    dict.from_list([
+      #(atom("club_id"), wrap(#(atom("text"), dynamic.string(club_id)))),
+    ]),
     atom("undefined"),
   )
   |> should.equal(expected_reply(club_id))

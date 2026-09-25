@@ -15,13 +15,18 @@ import mcl_bookclub_gleam/internal/payload.{type Payload}
 /// store_id/0 + data_dir/0) the reckon-db store and its evoq subscription
 /// BEFORE ServiceMod:start/1 fires.
 @external(erlang, "mcl_om", "boot")
-pub fn boot(service_module: dynamic.Dynamic) -> Result(dynamic.Dynamic, dynamic.Dynamic)
+pub fn boot(
+  service_module: dynamic.Dynamic,
+) -> Result(dynamic.Dynamic, dynamic.Dynamic)
 
 /// The mesh handles the emitters publish through: {ok, {Pool, Realm}} |
 /// {error, Reason}. Reshaped from mcl_om's three-tuple by
 /// mcl_bookclub_gleam_ffi.
 @external(erlang, "mcl_bookclub_gleam_ffi", "mesh_handles")
-pub fn mesh_handles() -> Result(#(dynamic.Dynamic, dynamic.Dynamic), dynamic.Dynamic)
+pub fn mesh_handles() -> Result(
+  #(dynamic.Dynamic, dynamic.Dynamic),
+  dynamic.Dynamic,
+)
 
 /// macula:publish/4 -- the fact leaves on the pool's link, reshaped by
 /// the FFI (the Erlang side returns a bare `ok' atom).

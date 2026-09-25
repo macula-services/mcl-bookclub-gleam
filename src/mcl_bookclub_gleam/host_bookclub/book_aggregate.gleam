@@ -6,11 +6,11 @@
 //// before any desk sees it.
 
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 import mcl_bookclub_gleam/host_bookclub/book_state
 import mcl_bookclub_gleam/host_bookclub/procure_book/maybe_procure_book
 import mcl_bookclub_gleam/host_bookclub/retire_book/maybe_retire_book
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// The state module atom -- evoq resolves it by name.
 pub fn state_module() -> dynamic.Dynamic {
@@ -18,7 +18,9 @@ pub fn state_module() -> dynamic.Dynamic {
 }
 
 /// evoq calls init/1 when the stream's aggregate first starts.
-pub fn init(aggregate_id: dynamic.Dynamic) -> Result(book_state.BookState, dynamic.Dynamic) {
+pub fn init(
+  aggregate_id: dynamic.Dynamic,
+) -> Result(book_state.BookState, dynamic.Dynamic) {
   case desk.string_from_dynamic(aggregate_id) {
     Ok(id) -> Ok(book_state.new(id))
     Error(e) -> Error(e)
@@ -27,7 +29,10 @@ pub fn init(aggregate_id: dynamic.Dynamic) -> Result(book_state.BookState, dynam
 
 /// evoq calls execute(State, Payload) -- State FIRST. The guard rules live
 /// in the desk's maybe_ module; the aggregate owns the stream's lifecycle.
-pub fn execute(state: book_state.BookState, payload: Payload) -> desk.DeskResult {
+pub fn execute(
+  state: book_state.BookState,
+  payload: Payload,
+) -> desk.DeskResult {
   case desk.command_is(payload, "procure_book_v1") {
     True -> guarded(state, payload, maybe_procure_book.handle_from_map)
     False ->
@@ -49,7 +54,10 @@ fn guarded(
   }
 }
 
-pub fn apply(state: book_state.BookState, event: Payload) -> book_state.BookState {
+pub fn apply(
+  state: book_state.BookState,
+  event: Payload,
+) -> book_state.BookState {
   book_state.apply_event(state, event)
 }
 

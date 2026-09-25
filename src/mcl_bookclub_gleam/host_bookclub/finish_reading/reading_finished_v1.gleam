@@ -10,7 +10,7 @@ import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type ReadingFinished {
   ReadingFinished(
@@ -30,7 +30,8 @@ pub fn event_type() -> String {
 }
 
 pub fn new(params: Payload) -> Result(ReadingFinished, dynamic.Dynamic) {
-  case desk.get_string(params, "reading_id"),
+  case
+    desk.get_string(params, "reading_id"),
     desk.get_string(params, "member_id"),
     desk.get_string(params, "book_id")
   {

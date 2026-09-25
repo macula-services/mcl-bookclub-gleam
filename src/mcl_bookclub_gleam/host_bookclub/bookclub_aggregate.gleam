@@ -12,12 +12,12 @@
 //// owns the business rule.
 
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
-import mcl_bookclub_gleam/host_bookclub/bookclub_state
 import mcl_bookclub_gleam/host_bookclub/archive_bookclub/maybe_archive_bookclub
+import mcl_bookclub_gleam/host_bookclub/bookclub_state
 import mcl_bookclub_gleam/host_bookclub/initiate_bookclub/maybe_initiate_bookclub
 import mcl_bookclub_gleam/host_bookclub/plan_party/maybe_plan_party
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// The state module atom -- evoq resolves it by name.
 pub fn state_module() -> dynamic.Dynamic {
@@ -25,7 +25,9 @@ pub fn state_module() -> dynamic.Dynamic {
 }
 
 /// evoq calls init/1 when the stream's aggregate first starts.
-pub fn init(aggregate_id: dynamic.Dynamic) -> Result(bookclub_state.BookclubState, dynamic.Dynamic) {
+pub fn init(
+  aggregate_id: dynamic.Dynamic,
+) -> Result(bookclub_state.BookclubState, dynamic.Dynamic) {
   case desk.string_from_dynamic(aggregate_id) {
     Ok(id) -> Ok(bookclub_state.new(id))
     Error(e) -> Error(e)
@@ -35,7 +37,10 @@ pub fn init(aggregate_id: dynamic.Dynamic) -> Result(bookclub_state.BookclubStat
 /// evoq calls execute(State, Payload) -- State FIRST. The guard rules live
 /// in the desk's maybe_ module; the aggregate only dispatches on the
 /// command type.
-pub fn execute(state: bookclub_state.BookclubState, payload: Payload) -> desk.DeskResult {
+pub fn execute(
+  state: bookclub_state.BookclubState,
+  payload: Payload,
+) -> desk.DeskResult {
   case desk.command_is(payload, "initiate_bookclub_v1") {
     True -> guarded(state, payload, maybe_initiate_bookclub.handle_from_map)
     False ->
@@ -61,7 +66,10 @@ fn guarded(
   }
 }
 
-pub fn apply(state: bookclub_state.BookclubState, event: Payload) -> bookclub_state.BookclubState {
+pub fn apply(
+  state: bookclub_state.BookclubState,
+  event: Payload,
+) -> bookclub_state.BookclubState {
   bookclub_state.apply_event(state, event)
 }
 
@@ -69,7 +77,9 @@ pub fn snapshot(state: bookclub_state.BookclubState) -> dynamic.Dynamic {
   desk.payload_to_dynamic(bookclub_state.to_map(state))
 }
 
-pub fn from_snapshot(snapshot_data: dynamic.Dynamic) -> bookclub_state.BookclubState {
+pub fn from_snapshot(
+  snapshot_data: dynamic.Dynamic,
+) -> bookclub_state.BookclubState {
   let assert Ok(map) = desk.decode_map(snapshot_data)
   let assert Ok(state) = bookclub_state.from_map(map)
   state

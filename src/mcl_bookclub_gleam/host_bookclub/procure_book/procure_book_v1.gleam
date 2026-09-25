@@ -9,7 +9,7 @@ import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type ProcureBook {
   ProcureBook(
@@ -38,7 +38,8 @@ pub fn mint_book_id() -> String {
 /// The command's payload: required fields are binaries, club_name
 /// defaults to the empty binary (the entry point stamps it in later).
 pub fn new(params: Payload) -> Result(ProcureBook, dynamic.Dynamic) {
-  case desk.get_string(params, "book_id"),
+  case
+    desk.get_string(params, "book_id"),
     desk.get_string(params, "club_id"),
     desk.get_string(params, "title"),
     desk.get_string(params, "author")

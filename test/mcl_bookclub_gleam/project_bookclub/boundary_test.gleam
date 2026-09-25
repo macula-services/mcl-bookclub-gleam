@@ -15,8 +15,8 @@ import gleam/dynamic/decode
 import gleam/list
 import gleam/string
 import gleeunit/should
-import mcl_bookclub_gleam/test_support
 import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
+import mcl_bookclub_gleam/test_support
 
 /// A source file's text. A raw text decodes directly; file:read_file/1's
 /// {ok, Text} arrives as a two-tuple whose element 2 is the text.
@@ -75,36 +75,40 @@ pub fn the_query_columns_are_all_in_the_prj_schema_test() {
   // column a desk does not select would not appear).
   let schema_text = bookclub_read_model_store.schema() |> string.join(" ")
   let tables = [
-    #(
-      "clubs",
-      ["get_bookclub_by_id"],
-      ["club_id", "name", "status", "initiated_by", "initiated_at"],
-    ),
-    #(
-      "members",
-      ["get_member_by_id"],
-      ["member_id", "club_id", "name", "status", "registered_at"],
-    ),
-    #(
-      "books",
-      ["get_book_by_id"],
-      ["book_id", "club_id", "title", "author", "status", "procured_at"],
-    ),
-    #(
-      "readings",
-      ["get_reading_by_id", "get_readings_by_member"],
-      [
-        "reading_id",
-        "member_id",
-        "book_id",
-        "status",
-        "started_at",
-        "pages_read",
-        "finished_at",
-      ],
-    ),
+    #("clubs", ["get_bookclub_by_id"], [
+      "club_id",
+      "name",
+      "status",
+      "initiated_by",
+      "initiated_at",
+    ]),
+    #("members", ["get_member_by_id"], [
+      "member_id",
+      "club_id",
+      "name",
+      "status",
+      "registered_at",
+    ]),
+    #("books", ["get_book_by_id"], [
+      "book_id",
+      "club_id",
+      "title",
+      "author",
+      "status",
+      "procured_at",
+    ]),
+    #("readings", ["get_reading_by_id", "get_readings_by_member"], [
+      "reading_id",
+      "member_id",
+      "book_id",
+      "status",
+      "started_at",
+      "pages_read",
+      "finished_at",
+    ]),
   ]
-  let qry_sources = test_support.source_files("src/mcl_bookclub_gleam/query_bookclub")
+  let qry_sources =
+    test_support.source_files("src/mcl_bookclub_gleam/query_bookclub")
   list.each(tables, fn(table) {
     let #(_, desk_names, columns) = table
     list.each(columns, fn(column) {

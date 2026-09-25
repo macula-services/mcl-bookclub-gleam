@@ -20,7 +20,9 @@ pub type Message {
   Query(
     sql: String,
     args: List(dynamic.Dynamic),
-    reply_to: process.Subject(Result(List(List(dynamic.Dynamic)), dynamic.Dynamic)),
+    reply_to: process.Subject(
+      Result(List(List(dynamic.Dynamic)), dynamic.Dynamic),
+    ),
   )
   Ping(reply_to: #(process.Pid, dynamic.Dynamic))
 }
@@ -40,7 +42,9 @@ pub fn name() -> dynamic.Dynamic {
 pub fn start(
   sqlite_path: String,
 ) -> Result(actor.Started(process.Subject(Message)), actor.StartError) {
-  actor.new_with_initialiser(10_000, fn(subject) { init_store(sqlite_path, subject) })
+  actor.new_with_initialiser(10_000, fn(subject) {
+    init_store(sqlite_path, subject)
+  })
   |> actor.on_message(handle_message)
   |> actor.named(health.exact_name("bookclub_query_store"))
   |> actor.start
@@ -53,14 +57,18 @@ fn init_store(
   case esqlite.ensure_dir(sqlite_path) {
     Ok(_) ->
       case esqlite.open(sqlite_path) {
-        Ok(conn) -> Ok(actor.initialised(State(conn)) |> actor.returning(subject))
+        Ok(conn) ->
+          Ok(actor.initialised(State(conn)) |> actor.returning(subject))
         Error(_) -> Error("open_failed")
       }
     Error(_) -> Error("ensure_dir_failed")
   }
 }
 
-fn handle_message(state: State, message: Message) -> actor.Next(State, Message) {
+fn handle_message(
+  state: State,
+  message: Message,
+) -> actor.Next(State, Message) {
   case message {
     Query(sql, args, reply_to) -> {
       process.send(reply_to, esqlite.q(state.conn, sql, args))

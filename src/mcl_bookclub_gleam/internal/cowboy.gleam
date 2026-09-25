@@ -45,7 +45,9 @@ pub fn path_info(req: dynamic.Dynamic) -> List(String)
 
 /// cowboy_req:read_body/1 reshaped by the FFI: {ok, {Body, Req}}.
 @external(erlang, "mcl_bookclub_gleam_ffi", "read_body")
-pub fn read_body(req: dynamic.Dynamic) -> Result(#(String, dynamic.Dynamic), dynamic.Dynamic)
+pub fn read_body(
+  req: dynamic.Dynamic,
+) -> Result(#(String, dynamic.Dynamic), dynamic.Dynamic)
 
 @external(erlang, "cowboy_req", "reply")
 pub fn reply(

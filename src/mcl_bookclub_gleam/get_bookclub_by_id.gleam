@@ -11,14 +11,16 @@
 
 import gleam/dict
 import gleam/dynamic
+import mcl_bookclub_gleam/facts
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/mesh
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload, wrap}
-import mcl_bookclub_gleam/facts
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom, wrap}
 import mcl_bookclub_gleam/query_bookclub/get_bookclub_by_id/get_bookclub_by_id
 
 /// macula_response behaviour: init/1 answers {ok, State}.
-pub fn init(_args: dynamic.Dynamic) -> Result(dynamic.Dynamic, dynamic.Dynamic) {
+pub fn init(
+  _args: dynamic.Dynamic,
+) -> Result(dynamic.Dynamic, dynamic.Dynamic) {
   Ok(atom("undefined"))
 }
 
@@ -32,7 +34,10 @@ pub fn handle_request(
   replied(club_id, state)
 }
 
-fn replied(club_id: dynamic.Dynamic, state: dynamic.Dynamic) -> dynamic.Dynamic {
+fn replied(
+  club_id: dynamic.Dynamic,
+  state: dynamic.Dynamic,
+) -> dynamic.Dynamic {
   case desk.string_from_dynamic(club_id) {
     Ok(id) ->
       case get_bookclub_by_id.find(id) {
@@ -45,5 +50,7 @@ fn replied(club_id: dynamic.Dynamic, state: dynamic.Dynamic) -> dynamic.Dynamic 
 
 /// The reply's values go back out as CBOR text / 1 / 0.
 fn to_wire(club: Payload) -> dynamic.Dynamic {
-  desk.payload_to_dynamic(dict.map_values(club, fn(_key, value) { facts.to_wire(value) }))
+  desk.payload_to_dynamic(
+    dict.map_values(club, fn(_key, value) { facts.to_wire(value) }),
+  )
 }

@@ -11,13 +11,13 @@ import gleam/dynamic/decode
 import gleam/erlang/process
 import gleam/int
 import gleeunit/should
+import mcl_bookclub_gleam/admin
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/evoq
 import mcl_bookclub_gleam/internal/payload.{atom, new, wrap}
 import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
 import mcl_bookclub_gleam/query_bookclub/bookclub_query_store
 import mcl_bookclub_gleam/query_bookclub/get_bookclub_by_id/get_bookclub_by_id
-import mcl_bookclub_gleam/admin
 import mcl_bookclub_gleam/test_support
 
 /// Start both division stores on one unique file. A start failure (the
@@ -82,7 +82,9 @@ fn club_id_of(body: dynamic.Dynamic) -> String {
 }
 
 /// The first event map of a 200 body's `events' list.
-fn first_event_of(body: dynamic.Dynamic) -> dict.Dict(dynamic.Dynamic, dynamic.Dynamic) {
+fn first_event_of(
+  body: dynamic.Dynamic,
+) -> dict.Dict(dynamic.Dynamic, dynamic.Dynamic) {
   let assert Ok(body_map) = desk.decode_map(body)
   let assert Ok(events) = desk.get(body_map, "events")
   let assert Ok(event_list) = decode.run(events, decode.list(decode.dynamic))
@@ -155,7 +157,8 @@ pub fn the_admin_refuses_unknown_routes_test() {
   test_support.run(fn() {
     start_stores()
     let assert #(404, _) = admin.dispatch("GET", ["nope"], dict.new())
-    let assert #(404, _) = admin.dispatch("POST", ["clubs", "bogus"], dict.new())
+    let assert #(404, _) =
+      admin.dispatch("POST", ["clubs", "bogus"], dict.new())
     Nil
   })
 }
@@ -185,6 +188,7 @@ pub fn the_admin_reports_desk_refusals_test() {
 /// such club, and that is a 404, not a crash.
 pub fn the_admin_reads_a_missing_id_as_missing_test() {
   start_stores()
-  let assert #(404, _) = admin.dispatch("GET", ["clubs", "unknown-id"], dict.new())
+  let assert #(404, _) =
+    admin.dispatch("GET", ["clubs", "unknown-id"], dict.new())
   Nil
 }

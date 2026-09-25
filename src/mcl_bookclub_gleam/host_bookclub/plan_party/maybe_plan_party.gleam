@@ -8,15 +8,16 @@
 
 import gleam/dict
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 import mcl_bookclub_gleam/host_bookclub/bookclub_state
 import mcl_bookclub_gleam/host_bookclub/plan_party/party_planned_v1
 import mcl_bookclub_gleam/host_bookclub/plan_party/plan_party_v1
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// The Erlang module atoms of this desk's own modules -- evoq addresses
 /// the command by these.
 pub const command_module = "mcl_bookclub_gleam@host_bookclub@plan_party@plan_party_v1"
+
 pub const aggregate_module = "mcl_bookclub_gleam@host_bookclub@bookclub_aggregate"
 
 /// The command's payload as evoq hands it to the aggregate: the map
@@ -50,10 +51,17 @@ pub fn handle(
 }
 
 fn events(state: bookclub_state.BookclubState) -> desk.DeskResult {
-  case party_planned_v1.new(dict.from_list([
-    #(atom("club_id"), dynamic.string(bookclub_state.club_id(state))),
-    #(atom("parties_planned"), dynamic.int(bookclub_state.parties_planned(state) + 1)),
-  ])) {
+  case
+    party_planned_v1.new(
+      dict.from_list([
+        #(atom("club_id"), dynamic.string(bookclub_state.club_id(state))),
+        #(
+          atom("parties_planned"),
+          dynamic.int(bookclub_state.parties_planned(state) + 1),
+        ),
+      ]),
+    )
+  {
     Ok(event) -> Ok([party_planned_v1.to_map(event)])
     Error(e) -> Error(e)
   }

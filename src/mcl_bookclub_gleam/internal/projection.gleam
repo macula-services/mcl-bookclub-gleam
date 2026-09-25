@@ -6,7 +6,7 @@
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/evoq
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload, wrap}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom, wrap}
 
 /// The handler's interest: the event types it projects.
 pub fn interested_in(types: List(String)) -> List(String) {

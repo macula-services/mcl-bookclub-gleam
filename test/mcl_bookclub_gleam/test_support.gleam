@@ -29,7 +29,9 @@ pub fn ensure_store(
 ) -> Result(Nil, dynamic.Dynamic)
 
 @external(erlang, "mcl_bookclub_gleam_ffi", "test_start_subscription")
-pub fn start_subscription(store_id: dynamic.Dynamic) -> Result(dynamic.Dynamic, dynamic.Dynamic)
+pub fn start_subscription(
+  store_id: dynamic.Dynamic,
+) -> Result(dynamic.Dynamic, dynamic.Dynamic)
 
 @external(erlang, "mcl_bookclub_gleam_ffi", "test_read_stream")
 pub fn read_stream(
@@ -56,7 +58,8 @@ pub fn store_id() -> dynamic.Dynamic {
 /// body's duration.
 pub fn run(body: fn() -> Nil) -> Nil {
   let dir =
-    "/tmp/mcl_bookclub_gleam_tests/" <> int.to_string(unique_integer([wrap(atom("positive"))]))
+    "/tmp/mcl_bookclub_gleam_tests/"
+    <> int.to_string(unique_integer([wrap(atom("positive"))]))
   let assert Ok(_) = set_evoq_env(store_id())
   let assert Ok(_) =
     ensure_store(store_id(), wrap(to_charlist(dir <> "/store")))

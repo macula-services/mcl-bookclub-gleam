@@ -8,7 +8,7 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type PlanParty {
   PlanParty(club_id: String)

@@ -18,33 +18,34 @@ import gleam/int
 import gleam/list
 import gleam/string
 import gleeunit/should
-import mcl_bookclub_gleam/internal/evoq
-import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload, wrap}
-import mcl_bookclub_gleam/test_support
 import mcl_bookclub_gleam/host_bookclub/book_status
 import mcl_bookclub_gleam/host_bookclub/bookclub_status
 import mcl_bookclub_gleam/host_bookclub/member_status
 import mcl_bookclub_gleam/host_bookclub/reading_status
-import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
-import mcl_bookclub_gleam/project_bookclub/bookclub_archived/bookclub_archived_v1_to_sqlite_clubs
-import mcl_bookclub_gleam/project_bookclub/bookclub_initiated/bookclub_initiated_v1_to_sqlite_clubs
+import mcl_bookclub_gleam/internal/evoq
+import mcl_bookclub_gleam/internal/ids
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom, wrap}
 import mcl_bookclub_gleam/project_bookclub/book_procured/book_procured_v1_to_sqlite_books
 import mcl_bookclub_gleam/project_bookclub/book_retired/book_retired_v1_to_sqlite_books
+import mcl_bookclub_gleam/project_bookclub/bookclub_archived/bookclub_archived_v1_to_sqlite_clubs
+import mcl_bookclub_gleam/project_bookclub/bookclub_initiated/bookclub_initiated_v1_to_sqlite_clubs
+import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
 import mcl_bookclub_gleam/project_bookclub/member_registered/member_registered_v1_to_sqlite_members
 import mcl_bookclub_gleam/project_bookclub/member_unregistered/member_unregistered_v1_to_sqlite_members
 import mcl_bookclub_gleam/project_bookclub/reading_finished/reading_finished_v1_to_sqlite_readings
 import mcl_bookclub_gleam/project_bookclub/reading_started/reading_started_v1_to_sqlite_readings
+import mcl_bookclub_gleam/test_support
 
 /// Start the store actor on a unique path and ignore the error: the first
 /// caller in the VM wins the fixed name and creates the schema; later
 /// tests reuse whatever connection exists.
 fn ensure_store_actor() -> Nil {
-  let _ = bookclub_read_model_store.start(
-    "/tmp/mcl_bookclub_gleam_prj_tests/"
-    <> int.to_string(test_support.unique_integer([wrap(atom("positive"))]))
-    <> "/bookclub.sqlite3",
-  )
+  let _ =
+    bookclub_read_model_store.start(
+      "/tmp/mcl_bookclub_gleam_prj_tests/"
+      <> int.to_string(test_support.unique_integer([wrap(atom("positive"))]))
+      <> "/bookclub.sqlite3",
+    )
   Nil
 }
 
@@ -75,24 +76,26 @@ pub fn a_bookclub_initiated_event_projects_a_clubs_row_test() {
       #(atom("initiated_at"), dynamic.int(42)),
     ])
   let assert Ok(_) =
-    bookclub_initiated_v1_to_sqlite_clubs.handle_event("", event, dict.new(), evoq.empty_state())
-  let assert Ok([[    row_club_id,
-    row_name,
-    row_status,
-    row_by,
-    row_at,
-    row_event,
-    row_version,
-  ]]) =
+    bookclub_initiated_v1_to_sqlite_clubs.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
+  let assert Ok([
+    [row_club_id, row_name, row_status, row_by, row_at, row_event, row_version],
+  ]) =
     bookclub_read_model_store.q(
       "SELECT club_id, name, status, initiated_by, initiated_at, event_id, version"
-      <> " FROM clubs WHERE club_id = ?",
+        <> " FROM clubs WHERE club_id = ?",
       [dynamic.string(club_id)],
     )
   row_club_id |> should.equal(dynamic.string(club_id))
   row_name |> should.equal(dynamic.string("The Crooked Shelf"))
   row_status
-  |> should.equal(dynamic.string(bookclub_status.to_string(bookclub_status.initiated())))
+  |> should.equal(
+    dynamic.string(bookclub_status.to_string(bookclub_status.initiated())),
+  )
   row_by |> should.equal(dynamic.string("bea"))
   row_at |> should.equal(dynamic.int(42))
   row_event |> should.equal(dynamic.string("evt-init-1"))
@@ -110,24 +113,26 @@ pub fn a_bookclub_archived_event_projects_a_clubs_row_test() {
       #(atom("initiated_at"), dynamic.int(42)),
     ])
   let assert Ok(_) =
-    bookclub_archived_v1_to_sqlite_clubs.handle_event("", event, dict.new(), evoq.empty_state())
-  let assert Ok([[    row_club_id,
-    row_name,
-    row_status,
-    row_by,
-    row_at,
-    row_event,
-    row_version,
-  ]]) =
+    bookclub_archived_v1_to_sqlite_clubs.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
+  let assert Ok([
+    [row_club_id, row_name, row_status, row_by, row_at, row_event, row_version],
+  ]) =
     bookclub_read_model_store.q(
       "SELECT club_id, name, status, initiated_by, initiated_at, event_id, version"
-      <> " FROM clubs WHERE club_id = ?",
+        <> " FROM clubs WHERE club_id = ?",
       [dynamic.string(club_id)],
     )
   row_club_id |> should.equal(dynamic.string(club_id))
   row_name |> should.equal(dynamic.string("The Closed Chapter"))
   row_status
-  |> should.equal(dynamic.string(bookclub_status.to_string(bookclub_status.archived())))
+  |> should.equal(
+    dynamic.string(bookclub_status.to_string(bookclub_status.archived())),
+  )
   row_by |> should.equal(dynamic.string("bea"))
   row_at |> should.equal(dynamic.int(42))
   row_event |> should.equal(dynamic.string("evt-arch-1"))
@@ -146,25 +151,35 @@ pub fn a_member_registered_event_projects_a_members_row_test() {
       #(atom("registered_at"), dynamic.int(100)),
     ])
   let assert Ok(_) =
-    member_registered_v1_to_sqlite_members.handle_event("", event, dict.new(), evoq.empty_state())
-  let assert Ok([[    row_member_id,
-    row_club_id,
-    row_name,
-    row_status,
-    row_at,
-    row_event,
-    row_version,
-  ]]) =
+    member_registered_v1_to_sqlite_members.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
+  let assert Ok([
+    [
+      row_member_id,
+      row_club_id,
+      row_name,
+      row_status,
+      row_at,
+      row_event,
+      row_version,
+    ],
+  ]) =
     bookclub_read_model_store.q(
       "SELECT member_id, club_id, name, status, registered_at, event_id, version"
-      <> " FROM members WHERE member_id = ?",
+        <> " FROM members WHERE member_id = ?",
       [dynamic.string(member_id)],
     )
   row_member_id |> should.equal(dynamic.string(member_id))
   row_club_id |> should.equal(dynamic.string(club_id))
   row_name |> should.equal(dynamic.string("Bea"))
   row_status
-  |> should.equal(dynamic.string(member_status.to_string(member_status.registered())))
+  |> should.equal(
+    dynamic.string(member_status.to_string(member_status.registered())),
+  )
   row_at |> should.equal(dynamic.int(100))
   row_event |> should.equal(dynamic.string("evt-mem-1"))
   row_version |> should.equal(dynamic.int(0))
@@ -182,25 +197,35 @@ pub fn a_member_unregistered_event_projects_a_members_row_test() {
       #(atom("registered_at"), dynamic.int(100)),
     ])
   let assert Ok(_) =
-    member_unregistered_v1_to_sqlite_members.handle_event("", event, dict.new(), evoq.empty_state())
-  let assert Ok([[    row_member_id,
-    row_club_id,
-    row_name,
-    row_status,
-    row_at,
-    row_event,
-    row_version,
-  ]]) =
+    member_unregistered_v1_to_sqlite_members.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
+  let assert Ok([
+    [
+      row_member_id,
+      row_club_id,
+      row_name,
+      row_status,
+      row_at,
+      row_event,
+      row_version,
+    ],
+  ]) =
     bookclub_read_model_store.q(
       "SELECT member_id, club_id, name, status, registered_at, event_id, version"
-      <> " FROM members WHERE member_id = ?",
+        <> " FROM members WHERE member_id = ?",
       [dynamic.string(member_id)],
     )
   row_member_id |> should.equal(dynamic.string(member_id))
   row_club_id |> should.equal(dynamic.string(club_id))
   row_name |> should.equal(dynamic.string("Bea"))
   row_status
-  |> should.equal(dynamic.string(member_status.to_string(member_status.unregistered())))
+  |> should.equal(
+    dynamic.string(member_status.to_string(member_status.unregistered())),
+  )
   row_at |> should.equal(dynamic.int(100))
   row_event |> should.equal(dynamic.string("evt-mem-2"))
   row_version |> should.equal(dynamic.int(1))
@@ -219,19 +244,27 @@ pub fn a_book_procured_event_projects_a_books_row_test() {
       #(atom("procured_at"), dynamic.int(300)),
     ])
   let assert Ok(_) =
-    book_procured_v1_to_sqlite_books.handle_event("", event, dict.new(), evoq.empty_state())
-  let assert Ok([[    row_book_id,
-    row_club_id,
-    row_title,
-    row_author,
-    row_status,
-    row_at,
-    row_event,
-    row_version,
-  ]]) =
+    book_procured_v1_to_sqlite_books.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
+  let assert Ok([
+    [
+      row_book_id,
+      row_club_id,
+      row_title,
+      row_author,
+      row_status,
+      row_at,
+      row_event,
+      row_version,
+    ],
+  ]) =
     bookclub_read_model_store.q(
       "SELECT book_id, club_id, title, author, status, procured_at, event_id, version"
-      <> " FROM books WHERE book_id = ?",
+        <> " FROM books WHERE book_id = ?",
       [dynamic.string(book_id)],
     )
   row_book_id |> should.equal(dynamic.string(book_id))
@@ -258,19 +291,27 @@ pub fn a_book_retired_event_projects_a_books_row_test() {
       #(atom("procured_at"), dynamic.int(300)),
     ])
   let assert Ok(_) =
-    book_retired_v1_to_sqlite_books.handle_event("", event, dict.new(), evoq.empty_state())
-  let assert Ok([[    row_book_id,
-    row_club_id,
-    row_title,
-    row_author,
-    row_status,
-    row_at,
-    row_event,
-    row_version,
-  ]]) =
+    book_retired_v1_to_sqlite_books.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
+  let assert Ok([
+    [
+      row_book_id,
+      row_club_id,
+      row_title,
+      row_author,
+      row_status,
+      row_at,
+      row_event,
+      row_version,
+    ],
+  ]) =
     bookclub_read_model_store.q(
       "SELECT book_id, club_id, title, author, status, procured_at, event_id, version"
-      <> " FROM books WHERE book_id = ?",
+        <> " FROM books WHERE book_id = ?",
       [dynamic.string(book_id)],
     )
   row_book_id |> should.equal(dynamic.string(book_id))
@@ -297,28 +338,38 @@ pub fn a_reading_started_event_projects_a_readings_row_test() {
       #(atom("started_at"), dynamic.int(500)),
     ])
   let assert Ok(_) =
-    reading_started_v1_to_sqlite_readings.handle_event("", event, dict.new(), evoq.empty_state())
-  let assert Ok([[    row_reading_id,
-    row_member_id,
-    row_book_id,
-    row_status,
-    row_at,
-    row_pages,
-    row_finished,
-    row_event,
-    row_version,
-  ]]) =
+    reading_started_v1_to_sqlite_readings.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
+  let assert Ok([
+    [
+      row_reading_id,
+      row_member_id,
+      row_book_id,
+      row_status,
+      row_at,
+      row_pages,
+      row_finished,
+      row_event,
+      row_version,
+    ],
+  ]) =
     bookclub_read_model_store.q(
       "SELECT reading_id, member_id, book_id, status, started_at,"
-      <> " pages_read, finished_at, event_id, version"
-      <> " FROM readings WHERE reading_id = ?",
+        <> " pages_read, finished_at, event_id, version"
+        <> " FROM readings WHERE reading_id = ?",
       [dynamic.string(reading_id)],
     )
   row_reading_id |> should.equal(dynamic.string(reading_id))
   row_member_id |> should.equal(dynamic.string(member_id))
   row_book_id |> should.equal(dynamic.string(book_id))
   row_status
-  |> should.equal(dynamic.string(reading_status.to_string(reading_status.in_progress())))
+  |> should.equal(
+    dynamic.string(reading_status.to_string(reading_status.in_progress())),
+  )
   row_at |> should.equal(dynamic.int(500))
   row_pages |> should.equal(dynamic.int(0))
   // A fresh reading has no finished_at: SQL NULL arrives as the atom
@@ -343,28 +394,38 @@ pub fn a_reading_finished_event_projects_a_readings_row_test() {
       #(atom("finished_at"), dynamic.int(999)),
     ])
   let assert Ok(_) =
-    reading_finished_v1_to_sqlite_readings.handle_event("", event, dict.new(), evoq.empty_state())
-  let assert Ok([[    row_reading_id,
-    row_member_id,
-    row_book_id,
-    row_status,
-    row_at,
-    row_pages,
-    row_finished,
-    row_event,
-    row_version,
-  ]]) =
+    reading_finished_v1_to_sqlite_readings.handle_event(
+      "",
+      event,
+      dict.new(),
+      evoq.empty_state(),
+    )
+  let assert Ok([
+    [
+      row_reading_id,
+      row_member_id,
+      row_book_id,
+      row_status,
+      row_at,
+      row_pages,
+      row_finished,
+      row_event,
+      row_version,
+    ],
+  ]) =
     bookclub_read_model_store.q(
       "SELECT reading_id, member_id, book_id, status, started_at,"
-      <> " pages_read, finished_at, event_id, version"
-      <> " FROM readings WHERE reading_id = ?",
+        <> " pages_read, finished_at, event_id, version"
+        <> " FROM readings WHERE reading_id = ?",
       [dynamic.string(reading_id)],
     )
   row_reading_id |> should.equal(dynamic.string(reading_id))
   row_member_id |> should.equal(dynamic.string(member_id))
   row_book_id |> should.equal(dynamic.string(book_id))
   row_status
-  |> should.equal(dynamic.string(reading_status.to_string(reading_status.finished())))
+  |> should.equal(
+    dynamic.string(reading_status.to_string(reading_status.finished())),
+  )
   row_at |> should.equal(dynamic.int(500))
   row_pages |> should.equal(dynamic.int(320))
   row_finished |> should.equal(dynamic.int(999))

@@ -16,11 +16,11 @@
 ////   sample.
 
 import gleam/dynamic
+import mcl_bookclub_gleam/facts
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/evoq
 import mcl_bookclub_gleam/internal/mesh
 import mcl_bookclub_gleam/internal/payload.{type Payload}
-import mcl_bookclub_gleam/facts
 
 pub fn interested_in() -> List(String) {
   ["member_registered_v1"]

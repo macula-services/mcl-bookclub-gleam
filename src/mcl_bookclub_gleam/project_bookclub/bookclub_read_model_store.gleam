@@ -33,7 +33,9 @@ pub type Message {
   Query(
     sql: String,
     args: List(dynamic.Dynamic),
-    reply_to: process.Subject(Result(List(List(dynamic.Dynamic)), dynamic.Dynamic)),
+    reply_to: process.Subject(
+      Result(List(List(dynamic.Dynamic)), dynamic.Dynamic),
+    ),
   )
   Ping(reply_to: #(process.Pid, dynamic.Dynamic))
 }
@@ -47,40 +49,40 @@ pub type State {
 pub fn schema() -> List(String) {
   [
     "CREATE TABLE IF NOT EXISTS clubs ("
-    <> " club_id      TEXT PRIMARY KEY,"
-    <> " name         TEXT NOT NULL,"
-    <> " status       TEXT NOT NULL,"
-    <> " initiated_by TEXT NOT NULL,"
-    <> " initiated_at INTEGER NOT NULL,"
-    <> " event_id     TEXT NOT NULL,"
-    <> " version      INTEGER NOT NULL)",
+      <> " club_id      TEXT PRIMARY KEY,"
+      <> " name         TEXT NOT NULL,"
+      <> " status       TEXT NOT NULL,"
+      <> " initiated_by TEXT NOT NULL,"
+      <> " initiated_at INTEGER NOT NULL,"
+      <> " event_id     TEXT NOT NULL,"
+      <> " version      INTEGER NOT NULL)",
     "CREATE TABLE IF NOT EXISTS members ("
-    <> " member_id     TEXT PRIMARY KEY,"
-    <> " club_id       TEXT NOT NULL,"
-    <> " name          TEXT NOT NULL,"
-    <> " status        TEXT NOT NULL,"
-    <> " registered_at INTEGER NOT NULL,"
-    <> " event_id      TEXT NOT NULL,"
-    <> " version       INTEGER NOT NULL)",
+      <> " member_id     TEXT PRIMARY KEY,"
+      <> " club_id       TEXT NOT NULL,"
+      <> " name          TEXT NOT NULL,"
+      <> " status        TEXT NOT NULL,"
+      <> " registered_at INTEGER NOT NULL,"
+      <> " event_id      TEXT NOT NULL,"
+      <> " version       INTEGER NOT NULL)",
     "CREATE TABLE IF NOT EXISTS books ("
-    <> " book_id      TEXT PRIMARY KEY,"
-    <> " club_id      TEXT NOT NULL,"
-    <> " title        TEXT NOT NULL,"
-    <> " author       TEXT NOT NULL,"
-    <> " status       TEXT NOT NULL,"
-    <> " procured_at  INTEGER NOT NULL,"
-    <> " event_id     TEXT NOT NULL,"
-    <> " version      INTEGER NOT NULL)",
+      <> " book_id      TEXT PRIMARY KEY,"
+      <> " club_id      TEXT NOT NULL,"
+      <> " title        TEXT NOT NULL,"
+      <> " author       TEXT NOT NULL,"
+      <> " status       TEXT NOT NULL,"
+      <> " procured_at  INTEGER NOT NULL,"
+      <> " event_id     TEXT NOT NULL,"
+      <> " version      INTEGER NOT NULL)",
     "CREATE TABLE IF NOT EXISTS readings ("
-    <> " reading_id  TEXT PRIMARY KEY,"
-    <> " member_id   TEXT NOT NULL,"
-    <> " book_id     TEXT NOT NULL,"
-    <> " status      TEXT NOT NULL,"
-    <> " started_at  INTEGER NOT NULL,"
-    <> " pages_read  INTEGER NOT NULL,"
-    <> " finished_at INTEGER,"
-    <> " event_id    TEXT NOT NULL,"
-    <> " version     INTEGER NOT NULL)",
+      <> " reading_id  TEXT PRIMARY KEY,"
+      <> " member_id   TEXT NOT NULL,"
+      <> " book_id     TEXT NOT NULL,"
+      <> " status      TEXT NOT NULL,"
+      <> " started_at  INTEGER NOT NULL,"
+      <> " pages_read  INTEGER NOT NULL,"
+      <> " finished_at INTEGER,"
+      <> " event_id    TEXT NOT NULL,"
+      <> " version     INTEGER NOT NULL)",
   ]
 }
 
@@ -95,7 +97,9 @@ pub fn name() -> dynamic.Dynamic {
 pub fn start(
   sqlite_path: String,
 ) -> Result(actor.Started(process.Subject(Message)), actor.StartError) {
-  actor.new_with_initialiser(10_000, fn(subject) { init_store(sqlite_path, subject) })
+  actor.new_with_initialiser(10_000, fn(subject) {
+    init_store(sqlite_path, subject)
+  })
   |> actor.on_message(handle_message)
   |> actor.named(health.exact_name("bookclub_read_model_store"))
   |> actor.start
@@ -110,7 +114,8 @@ fn init_store(
       case esqlite.open(sqlite_path) {
         Ok(conn) ->
           case create_schema(conn, schema()) {
-            Ok(_) -> Ok(actor.initialised(State(conn)) |> actor.returning(subject))
+            Ok(_) ->
+              Ok(actor.initialised(State(conn)) |> actor.returning(subject))
             Error(_) -> Error("schema_failed")
           }
         Error(_) -> Error("open_failed")
@@ -119,7 +124,10 @@ fn init_store(
   }
 }
 
-fn create_schema(conn: dynamic.Dynamic, statements: List(String)) -> Result(Nil, dynamic.Dynamic) {
+fn create_schema(
+  conn: dynamic.Dynamic,
+  statements: List(String),
+) -> Result(Nil, dynamic.Dynamic) {
   case statements {
     [] -> Ok(Nil)
     [sql, ..rest] ->
@@ -130,7 +138,10 @@ fn create_schema(conn: dynamic.Dynamic, statements: List(String)) -> Result(Nil,
   }
 }
 
-fn handle_message(state: State, message: Message) -> actor.Next(State, Message) {
+fn handle_message(
+  state: State,
+  message: Message,
+) -> actor.Next(State, Message) {
   case message {
     Exec(sql, args, reply_to) -> {
       process.send(reply_to, esqlite.exec(state.conn, sql, args))
@@ -155,7 +166,10 @@ pub fn subject() -> process.Subject(Message) {
 /// One parameterised write through the store actor. A projection turns an
 /// Error into {store_error, Reason} and evoq's retry machinery takes over
 /// -- a store error is a retryable condition, never a crash.
-pub fn exec(sql: String, args: List(dynamic.Dynamic)) -> Result(Nil, dynamic.Dynamic) {
+pub fn exec(
+  sql: String,
+  args: List(dynamic.Dynamic),
+) -> Result(Nil, dynamic.Dynamic) {
   actor.call(subject(), 5000, fn(reply_to) { Exec(sql, args, reply_to) })
 }
 

@@ -7,13 +7,10 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type UnregisterMember {
-  UnregisterMember(
-    member_id: String,
-    unregistered_by: String,
-  )
+  UnregisterMember(member_id: String, unregistered_by: String)
 }
 
 /// The command's type atom -- the same atom to_map/1 stamps into the
@@ -23,7 +20,8 @@ pub fn command_type() -> dynamic.Dynamic {
 }
 
 pub fn new(params: Payload) -> Result(UnregisterMember, dynamic.Dynamic) {
-  case desk.get_string(params, "member_id"),
+  case
+    desk.get_string(params, "member_id"),
     desk.get_string(params, "unregistered_by")
   {
     Ok(member_id), Ok(unregistered_by) ->

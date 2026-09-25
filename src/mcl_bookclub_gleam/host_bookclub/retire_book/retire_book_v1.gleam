@@ -8,13 +8,10 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type RetireBook {
-  RetireBook(
-    book_id: String,
-    retired_by: String,
-  )
+  RetireBook(book_id: String, retired_by: String)
 }
 
 /// The command's type atom -- the same atom to_map/1 stamps into the
@@ -25,7 +22,10 @@ pub fn command_type() -> dynamic.Dynamic {
 
 /// The command's payload: both fields are required binaries.
 pub fn new(params: Payload) -> Result(RetireBook, dynamic.Dynamic) {
-  case desk.get_string(params, "book_id"), desk.get_string(params, "retired_by") {
+  case
+    desk.get_string(params, "book_id"),
+    desk.get_string(params, "retired_by")
+  {
     Ok(book_id), Ok(retired_by) ->
       case book_id != "" && retired_by != "" {
         True -> Ok(RetireBook(book_id: book_id, retired_by: retired_by))

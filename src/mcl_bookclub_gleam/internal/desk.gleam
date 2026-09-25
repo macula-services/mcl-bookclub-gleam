@@ -11,7 +11,7 @@ import gleam/dynamic
 import gleam/dynamic/decode
 import mcl_bookclub_gleam/internal/evoq
 import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// What the aggregate's execute/2 and the maybe_ modules return: the
 /// accepted event maps, or a refusal.
@@ -26,7 +26,9 @@ pub type DispatchResult =
 
 /// The one metadata key every dispatch carries: the command timestamp.
 pub fn command_metadata() -> Payload {
-  dict.from_list([#(atom("timestamp"), dynamic.int(ids.now_ms(ids.millisecond())))])
+  dict.from_list([
+    #(atom("timestamp"), dynamic.int(ids.now_ms(ids.millisecond()))),
+  ])
 }
 
 /// The dispatch every desk performs: build the evoq command, dispatch it
@@ -52,7 +54,10 @@ pub fn dispatch_command(
 /// Read a payload field tolerantly: the atom key first (the in-memory
 /// command shape), then the binary key (an event read back from the store
 /// or a wire-shaped payload). Missing means `missing_required_fields`.
-pub fn get(payload: Payload, key_name: String) -> Result(dynamic.Dynamic, dynamic.Dynamic) {
+pub fn get(
+  payload: Payload,
+  key_name: String,
+) -> Result(dynamic.Dynamic, dynamic.Dynamic) {
   case dict.get(payload, atom(key_name)) {
     Ok(value) -> Ok(value)
     Error(_) ->
@@ -64,7 +69,10 @@ pub fn get(payload: Payload, key_name: String) -> Result(dynamic.Dynamic, dynami
 }
 
 /// Read a required string field.
-pub fn get_string(payload: Payload, key_name: String) -> Result(String, dynamic.Dynamic) {
+pub fn get_string(
+  payload: Payload,
+  key_name: String,
+) -> Result(String, dynamic.Dynamic) {
   case get(payload, key_name) {
     Ok(value) -> string_from_dynamic(value)
     Error(e) -> Error(e)
@@ -72,7 +80,9 @@ pub fn get_string(payload: Payload, key_name: String) -> Result(String, dynamic.
 }
 
 /// Coerce a dynamic value to a String (the aggregate ids evoq hands back).
-pub fn string_from_dynamic(value: dynamic.Dynamic) -> Result(String, dynamic.Dynamic) {
+pub fn string_from_dynamic(
+  value: dynamic.Dynamic,
+) -> Result(String, dynamic.Dynamic) {
   case decode.run(value, decode.string) {
     Ok(string) -> Ok(string)
     Error(_) -> Error(invalid_params())
@@ -81,7 +91,11 @@ pub fn string_from_dynamic(value: dynamic.Dynamic) -> Result(String, dynamic.Dyn
 
 /// Read an optional string field with a default (the twins' club_name
 /// pattern: absent means the empty binary).
-pub fn get_string_default(payload: Payload, key_name: String, default: String) -> String {
+pub fn get_string_default(
+  payload: Payload,
+  key_name: String,
+  default: String,
+) -> String {
   case get_string(payload, key_name) {
     Ok(value) -> value
     Error(_) -> default
@@ -89,7 +103,11 @@ pub fn get_string_default(payload: Payload, key_name: String, default: String) -
 }
 
 /// Read an optional int field with a default.
-pub fn get_int_default(payload: Payload, key_name: String, default: Int) -> Int {
+pub fn get_int_default(
+  payload: Payload,
+  key_name: String,
+  default: Int,
+) -> Int {
   case get(payload, key_name) {
     Ok(value) ->
       case decode.run(value, decode.int) {
@@ -101,7 +119,10 @@ pub fn get_int_default(payload: Payload, key_name: String, default: Int) -> Int 
 }
 
 /// Read a required int field (finish_reading_v1's pages_read).
-pub fn get_int(payload: Payload, key_name: String) -> Result(Int, dynamic.Dynamic) {
+pub fn get_int(
+  payload: Payload,
+  key_name: String,
+) -> Result(Int, dynamic.Dynamic) {
   case get(payload, key_name) {
     Ok(value) ->
       case decode.run(value, decode.int) {

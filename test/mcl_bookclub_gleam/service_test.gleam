@@ -58,11 +58,15 @@ pub fn the_identity_spec_matches_the_wire_contract_test() {
   desk.get(spec, "actions")
   |> should.equal(Ok(dynamic.list([dynamic.string("get_bookclub_by_id")])))
   desk.get(spec, "resources")
-  |> should.equal(Ok(dynamic.list([
-    dynamic.string("bookclub/member/member_registered_v1"),
-    dynamic.string("bookclub/book/book_procured_v1"),
-    dynamic.string("bookclub/book/book_retired_v1"),
-  ])))
+  |> should.equal(
+    Ok(
+      dynamic.list([
+        dynamic.string("bookclub/member/member_registered_v1"),
+        dynamic.string("bookclub/book/book_procured_v1"),
+        dynamic.string("bookclub/book/book_retired_v1"),
+      ]),
+    ),
+  )
 }
 
 /// The store id is named in TWO places (service and evoq's dispatch

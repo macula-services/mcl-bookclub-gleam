@@ -13,14 +13,19 @@ import mcl_bookclub_gleam/internal/evoq
 import mcl_bookclub_gleam/internal/payload.{atom, new}
 import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
 
-pub fn start() -> Result(actor.Started(static_supervisor.Supervisor), actor.StartError) {
+pub fn start() -> Result(
+  actor.Started(static_supervisor.Supervisor),
+  actor.StartError,
+) {
   static_supervisor.new(static_supervisor.OneForOne)
   |> static_supervisor.restart_tolerance(5, 10)
   // The store FIRST: a projection child crashing is restarted against a
   // store that exists.
-  |> static_supervisor.add(supervision.worker(fn() {
-    bookclub_read_model_store.start(data_dir.sqlite_path())
-  }))
+  |> static_supervisor.add(
+    supervision.worker(fn() {
+      bookclub_read_model_store.start(data_dir.sqlite_path())
+    }),
+  )
   |> static_supervisor.add(handler(
     "mcl_bookclub_gleam@project_bookclub@bookclub_initiated@bookclub_initiated_v1_to_sqlite_clubs",
   ))

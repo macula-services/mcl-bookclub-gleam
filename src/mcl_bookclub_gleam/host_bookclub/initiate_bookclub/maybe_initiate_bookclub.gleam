@@ -8,15 +8,16 @@
 
 import gleam/dict
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 import mcl_bookclub_gleam/host_bookclub/bookclub_state
 import mcl_bookclub_gleam/host_bookclub/initiate_bookclub/bookclub_initiated_v1
 import mcl_bookclub_gleam/host_bookclub/initiate_bookclub/initiate_bookclub_v1
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// The Erlang module atoms of this desk's own modules -- evoq addresses
 /// the command by these.
 pub const command_module = "mcl_bookclub_gleam@host_bookclub@initiate_bookclub@initiate_bookclub_v1"
+
 pub const aggregate_module = "mcl_bookclub_gleam@host_bookclub@bookclub_aggregate"
 
 /// The command's payload as evoq hands it to the aggregate: the map
@@ -48,11 +49,21 @@ pub fn handle(
 }
 
 fn events(command: initiate_bookclub_v1.InitiateBookclub) -> desk.DeskResult {
-  case bookclub_initiated_v1.new(dict.from_list([
-    #(atom("club_id"), dynamic.string(initiate_bookclub_v1.get_club_id(command))),
-    #(atom("name"), dynamic.string(initiate_bookclub_v1.get_name(command))),
-    #(atom("initiated_by"), dynamic.string(initiate_bookclub_v1.get_initiated_by(command))),
-  ])) {
+  case
+    bookclub_initiated_v1.new(
+      dict.from_list([
+        #(
+          atom("club_id"),
+          dynamic.string(initiate_bookclub_v1.get_club_id(command)),
+        ),
+        #(atom("name"), dynamic.string(initiate_bookclub_v1.get_name(command))),
+        #(
+          atom("initiated_by"),
+          dynamic.string(initiate_bookclub_v1.get_initiated_by(command)),
+        ),
+      ]),
+    )
+  {
     Ok(event) -> Ok([bookclub_initiated_v1.to_map(event)])
     Error(e) -> Error(e)
   }

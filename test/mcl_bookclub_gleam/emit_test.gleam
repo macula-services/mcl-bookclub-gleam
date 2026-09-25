@@ -7,13 +7,13 @@
 import gleam/dict
 import gleam/dynamic
 import gleeunit/should
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/evoq
-import mcl_bookclub_gleam/internal/payload.{atom, wrap}
 import mcl_bookclub_gleam/emit_book_procured_v1_to_mesh
 import mcl_bookclub_gleam/emit_book_retired_v1_to_mesh
 import mcl_bookclub_gleam/emit_member_registered_v1_to_mesh
 import mcl_bookclub_gleam/facts
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/evoq
+import mcl_bookclub_gleam/internal/payload.{atom, wrap}
 
 /// A side-effect handler must refuse replays, or a restart re-publishes
 /// the whole history. The mechanism is the declared policy, asserted so

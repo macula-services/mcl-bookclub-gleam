@@ -10,14 +10,10 @@ import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type InitiateBookclub {
-  InitiateBookclub(
-    club_id: String,
-    name: String,
-    initiated_by: String,
-  )
+  InitiateBookclub(club_id: String, name: String, initiated_by: String)
 }
 
 /// The command's type atom -- the same atom to_map/1 stamps into the
@@ -36,7 +32,8 @@ pub fn mint_club_id() -> String {
 
 /// The command's payload: all three fields are required binaries.
 pub fn new(params: Payload) -> Result(InitiateBookclub, dynamic.Dynamic) {
-  case desk.get_string(params, "club_id"),
+  case
+    desk.get_string(params, "club_id"),
     desk.get_string(params, "name"),
     desk.get_string(params, "initiated_by")
   {

@@ -8,11 +8,11 @@
 //// sees it.
 
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
-import mcl_bookclub_gleam/host_bookclub/reading_state
 import mcl_bookclub_gleam/host_bookclub/finish_reading/maybe_finish_reading
+import mcl_bookclub_gleam/host_bookclub/reading_state
 import mcl_bookclub_gleam/host_bookclub/start_reading/maybe_start_reading
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// The state module atom -- evoq resolves it by name.
 pub fn state_module() -> dynamic.Dynamic {
@@ -20,7 +20,9 @@ pub fn state_module() -> dynamic.Dynamic {
 }
 
 /// evoq calls init/1 when the stream's aggregate first starts.
-pub fn init(aggregate_id: dynamic.Dynamic) -> Result(reading_state.ReadingState, dynamic.Dynamic) {
+pub fn init(
+  aggregate_id: dynamic.Dynamic,
+) -> Result(reading_state.ReadingState, dynamic.Dynamic) {
   case desk.string_from_dynamic(aggregate_id) {
     Ok(id) -> Ok(reading_state.new(id))
     Error(e) -> Error(e)
@@ -29,7 +31,10 @@ pub fn init(aggregate_id: dynamic.Dynamic) -> Result(reading_state.ReadingState,
 
 /// evoq calls execute(State, Payload) -- State FIRST. The guard rules live
 /// in the desk's maybe_ module; the aggregate owns the stream's lifecycle.
-pub fn execute(state: reading_state.ReadingState, payload: Payload) -> desk.DeskResult {
+pub fn execute(
+  state: reading_state.ReadingState,
+  payload: Payload,
+) -> desk.DeskResult {
   case desk.command_is(payload, "start_reading_v1") {
     True -> guarded(state, payload, maybe_start_reading.handle_from_map)
     False ->
@@ -51,7 +56,10 @@ fn guarded(
   }
 }
 
-pub fn apply(state: reading_state.ReadingState, event: Payload) -> reading_state.ReadingState {
+pub fn apply(
+  state: reading_state.ReadingState,
+  event: Payload,
+) -> reading_state.ReadingState {
   reading_state.apply_event(state, event)
 }
 
@@ -59,7 +67,9 @@ pub fn snapshot(state: reading_state.ReadingState) -> dynamic.Dynamic {
   desk.payload_to_dynamic(reading_state.to_map(state))
 }
 
-pub fn from_snapshot(snapshot_data: dynamic.Dynamic) -> reading_state.ReadingState {
+pub fn from_snapshot(
+  snapshot_data: dynamic.Dynamic,
+) -> reading_state.ReadingState {
   let assert Ok(map) = desk.decode_map(snapshot_data)
   let assert Ok(state) = reading_state.from_map(map)
   state

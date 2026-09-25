@@ -7,13 +7,10 @@
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type ArchiveBookclub {
-  ArchiveBookclub(
-    club_id: String,
-    archived_by: String,
-  )
+  ArchiveBookclub(club_id: String, archived_by: String)
 }
 
 /// The command's type atom -- the same atom to_map/1 stamps into the
@@ -23,16 +20,13 @@ pub fn command_type() -> dynamic.Dynamic {
 }
 
 pub fn new(params: Payload) -> Result(ArchiveBookclub, dynamic.Dynamic) {
-  case desk.get_string(params, "club_id"),
+  case
+    desk.get_string(params, "club_id"),
     desk.get_string(params, "archived_by")
   {
     Ok(club_id), Ok(archived_by) ->
       case club_id != "" && archived_by != "" {
-        True ->
-          Ok(ArchiveBookclub(
-            club_id: club_id,
-            archived_by: archived_by,
-          ))
+        True -> Ok(ArchiveBookclub(club_id: club_id, archived_by: archived_by))
         False -> Error(desk.invalid_params())
       }
     _, _ -> Error(desk.missing_required_fields())

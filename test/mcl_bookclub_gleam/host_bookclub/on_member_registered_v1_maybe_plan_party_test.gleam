@@ -12,23 +12,23 @@ import gleam/dynamic
 import gleam/erlang/process
 import gleam/list
 import gleeunit/should
+import mcl_bookclub_gleam/host_bookclub/initiate_bookclub/initiate_bookclub_api
+import mcl_bookclub_gleam/host_bookclub/register_member/register_member_api
+import mcl_bookclub_gleam/host_bookclub/register_member/register_member_v1
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/evoq
 import mcl_bookclub_gleam/internal/payload.{atom, new}
 import mcl_bookclub_gleam/test_support
-import mcl_bookclub_gleam/host_bookclub/initiate_bookclub/initiate_bookclub_api
-import mcl_bookclub_gleam/host_bookclub/register_member/register_member_api
-import mcl_bookclub_gleam/host_bookclub/register_member/register_member_v1
 
-const policy_module =
-  "mcl_bookclub_gleam@host_bookclub@on_member_registered_v1_maybe_plan_party"
+const policy_module = "mcl_bookclub_gleam@host_bookclub@on_member_registered_v1_maybe_plan_party"
 
 /// Initiate a club through the real entry point and return its id.
 fn initiated_club() -> String {
-  let params = dict.from_list([
-    #(atom("name"), dynamic.string("The Crooked Shelf")),
-    #(atom("initiated_by"), dynamic.string("bea")),
-  ])
+  let params =
+    dict.from_list([
+      #(atom("name"), dynamic.string("The Crooked Shelf")),
+      #(atom("initiated_by"), dynamic.string("bea")),
+    ])
   let assert Ok(#(0, [event])) = initiate_bookclub_api.handle(params)
   desk.get_string(event, "club_id")
   |> should.be_ok
@@ -39,11 +39,12 @@ fn initiated_club() -> String {
 /// Register a member against the club through the real entry point; the
 /// member's stream id is minted, never derived from the name.
 fn register_member(club_id: String) -> Nil {
-  let params = dict.from_list([
-    #(atom("member_id"), dynamic.string(register_member_v1.mint_member_id())),
-    #(atom("club_id"), dynamic.string(club_id)),
-    #(atom("name"), dynamic.string("Bea")),
-  ])
+  let params =
+    dict.from_list([
+      #(atom("member_id"), dynamic.string(register_member_v1.mint_member_id())),
+      #(atom("club_id"), dynamic.string(club_id)),
+      #(atom("name"), dynamic.string("Bea")),
+    ])
   let assert Ok(_) = register_member_api.handle(params)
   Nil
 }

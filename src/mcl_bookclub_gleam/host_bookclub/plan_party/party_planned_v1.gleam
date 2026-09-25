@@ -9,14 +9,10 @@ import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type PartyPlanned {
-  PartyPlanned(
-    club_id: String,
-    parties_planned: Int,
-    planned_at: Int,
-  )
+  PartyPlanned(club_id: String, parties_planned: Int, planned_at: Int)
 }
 
 /// The binary event type -- what evoq_event_handler's interested_in/0
@@ -26,7 +22,10 @@ pub fn event_type() -> String {
 }
 
 pub fn new(params: Payload) -> Result(PartyPlanned, dynamic.Dynamic) {
-  case desk.get_string(params, "club_id"), desk.get_int(params, "parties_planned") {
+  case
+    desk.get_string(params, "club_id"),
+    desk.get_int(params, "parties_planned")
+  {
     Ok(club_id), Ok(parties_planned) ->
       Ok(PartyPlanned(
         club_id: club_id,

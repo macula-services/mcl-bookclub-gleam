@@ -11,10 +11,10 @@
 
 import gleam/dict
 import gleam/dynamic
+import mcl_bookclub_gleam/host_bookclub/bookclub_status
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/evoq
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
-import mcl_bookclub_gleam/host_bookclub/bookclub_status
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type BookclubState {
   BookclubState(

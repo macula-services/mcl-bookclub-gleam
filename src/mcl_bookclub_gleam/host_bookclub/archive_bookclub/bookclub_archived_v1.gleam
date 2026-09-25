@@ -12,7 +12,7 @@ import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/internal/desk
 import mcl_bookclub_gleam/internal/ids
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 pub type BookclubArchived {
   BookclubArchived(
@@ -32,7 +32,8 @@ pub fn event_type() -> String {
 }
 
 pub fn new(params: Payload) -> Result(BookclubArchived, dynamic.Dynamic) {
-  case desk.get_string(params, "club_id"),
+  case
+    desk.get_string(params, "club_id"),
     desk.get_string(params, "name"),
     desk.get_string(params, "initiated_by"),
     desk.get_string(params, "archived_by")

@@ -14,14 +14,10 @@
 import gleam/dict
 import gleam/dynamic
 import gleam/dynamic/decode
-import gleam/list
-import gleam/option.{type Option}
 import gleam/erlang/charlist
 import gleam/erlang/process
-import mcl_bookclub_gleam/internal/app_env
-import mcl_bookclub_gleam/internal/cowboy
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload, wrap}
+import gleam/list
+import gleam/option.{type Option}
 import mcl_bookclub_gleam/host_bookclub/archive_bookclub/archive_bookclub_api
 import mcl_bookclub_gleam/host_bookclub/finish_reading/finish_reading_api
 import mcl_bookclub_gleam/host_bookclub/initiate_bookclub/initiate_bookclub_api
@@ -31,6 +27,10 @@ import mcl_bookclub_gleam/host_bookclub/register_member/register_member_api
 import mcl_bookclub_gleam/host_bookclub/retire_book/retire_book_api
 import mcl_bookclub_gleam/host_bookclub/start_reading/start_reading_api
 import mcl_bookclub_gleam/host_bookclub/unregister_member/unregister_member_api
+import mcl_bookclub_gleam/internal/app_env
+import mcl_bookclub_gleam/internal/cowboy
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom, wrap}
 import mcl_bookclub_gleam/query_bookclub/get_book_by_id/get_book_by_id
 import mcl_bookclub_gleam/query_bookclub/get_bookclub_by_id/get_bookclub_by_id
 import mcl_bookclub_gleam/query_bookclub/get_member_by_id/get_member_by_id
@@ -38,26 +38,28 @@ import mcl_bookclub_gleam/query_bookclub/get_reading_by_id/get_reading_by_id
 import mcl_bookclub_gleam/query_bookclub/get_readings_by_member/get_readings_by_member
 
 const admin_ref = "mcl_bookclub_gleam_admin_http"
+
 const app_name = "mcl_bookclub_gleam"
 
 /// The admin listener, as a child of the facade supervisor. Port 0 gives
 /// an ephemeral port (the integration test reads it back with
 /// ranch:get_port/1).
 pub fn start_listener() -> Result(process.Pid, dynamic.Dynamic) {
-  let dispatch = cowboy.compile_routes([
-    wrap(#(
-      cowboy.any_host(),
-      dynamic.list([
-        route("/", "cowboy_static", static_file("admin/index.html")),
-        route("/app.js", "cowboy_static", static_file("admin/app.js")),
-        wrap(#(
-          "/api/[...]",
-          atom("mcl_bookclub_gleam@admin"),
-          wrap(dict.new()),
-        )),
-      ]),
-    )),
-  ])
+  let dispatch =
+    cowboy.compile_routes([
+      wrap(#(
+        cowboy.any_host(),
+        dynamic.list([
+          route("/", "cowboy_static", static_file("admin/index.html")),
+          route("/app.js", "cowboy_static", static_file("admin/app.js")),
+          wrap(#(
+            "/api/[...]",
+            atom("mcl_bookclub_gleam@admin"),
+            wrap(dict.new()),
+          )),
+        ]),
+      )),
+    ])
   let protocol_opts =
     dynamic.properties([
       #(
@@ -79,11 +81,7 @@ fn route(
 }
 
 fn static_file(path: String) -> dynamic.Dynamic {
-  wrap(#(
-    atom("priv_file"),
-    atom(app_name),
-    path,
-  ))
+  wrap(#(atom("priv_file"), atom(app_name), path))
 }
 
 /// The cowboy dispatch table, tested directly by the admin tests.
@@ -91,11 +89,7 @@ pub fn routes() -> List(dynamic.Dynamic) {
   [
     route("/", "cowboy_static", static_file("admin/index.html")),
     route("/app.js", "cowboy_static", static_file("admin/app.js")),
-    wrap(#(
-      "/api/[...]",
-      atom("mcl_bookclub_gleam@admin"),
-      wrap(dict.new()),
-    )),
+    wrap(#("/api/[...]", atom("mcl_bookclub_gleam@admin"), wrap(dict.new()))),
   ]
 }
 
@@ -103,7 +97,6 @@ pub fn routes() -> List(dynamic.Dynamic) {
 /// cowboy: single-shot, like mcl_om's own health handler -- read,
 /// dispatch, reply, done, the whole request in init/2.
 ///====================================================================
-
 pub fn init(req0: dynamic.Dynamic, state: dynamic.Dynamic) -> dynamic.Dynamic {
   let method = cowboy.method(req0)
   let path = cowboy.path_info(req0)
@@ -114,7 +107,10 @@ pub fn init(req0: dynamic.Dynamic, state: dynamic.Dynamic) -> dynamic.Dynamic {
   wrap(#(atom("ok"), req, state))
 }
 
-fn read_params(method: String, req: dynamic.Dynamic) -> #(Payload, dynamic.Dynamic) {
+fn read_params(
+  method: String,
+  req: dynamic.Dynamic,
+) -> #(Payload, dynamic.Dynamic) {
   case method {
     "POST" ->
       case cowboy.read_body(req) {
@@ -137,15 +133,20 @@ fn decode(body: String) -> Payload {
 /// point. Public for the admin tests, which call it directly with
 /// fabricated requests instead of standing up a listener.
 ///====================================================================
-
-pub fn dispatch(method: String, path: List(String), params: Payload) -> #(Int, dynamic.Dynamic) {
+pub fn dispatch(
+  method: String,
+  path: List(String),
+  params: Payload,
+) -> #(Int, dynamic.Dynamic) {
   case method, path {
-    "POST", ["clubs", "initiate"] -> result(initiate_bookclub_api.handle(params))
+    "POST", ["clubs", "initiate"] ->
+      result(initiate_bookclub_api.handle(params))
     "POST", ["clubs", "archive"] -> result(archive_bookclub_api.handle(params))
     "POST", ["clubs", "plan_party"] -> result(plan_party_api.handle(params))
     "POST", ["members", "register"] ->
       result(register_member_api.handle(enrich_club_name(params)))
-    "POST", ["members", "unregister"] -> result(unregister_member_api.handle(params))
+    "POST", ["members", "unregister"] ->
+      result(unregister_member_api.handle(params))
     "POST", ["books", "procure"] ->
       result(procure_book_api.handle(enrich_club_name(params)))
     "POST", ["books", "retire"] -> result(retire_book_api.handle(params))
@@ -187,44 +188,49 @@ fn enrich_club_name(params: Payload) -> Payload {
 
 fn result(dispatch_result: desk.DispatchResult) -> #(Int, dynamic.Dynamic) {
   case dispatch_result {
-    Ok(#(version, events)) ->
-      #(
-        200,
-        wrap(dict.from_list([
+    Ok(#(version, events)) -> #(
+      200,
+      wrap(
+        dict.from_list([
           #(atom("ok"), dynamic.bool(True)),
           #(atom("version"), dynamic.int(version)),
-          #(atom("events"), dynamic.list(list.map(events, desk.payload_to_dynamic))),
-        ])),
-      )
-    Error(reason) ->
-      #(
-        400,
-        wrap(dict.from_list([
+          #(
+            atom("events"),
+            dynamic.list(list.map(events, desk.payload_to_dynamic)),
+          ),
+        ]),
+      ),
+    )
+    Error(reason) -> #(
+      400,
+      wrap(
+        dict.from_list([
           #(atom("ok"), dynamic.bool(False)),
           #(atom("error"), reason),
-        ])),
-      )
+        ]),
+      ),
+    )
   }
 }
 
 fn found(find_result: Result(a, dynamic.Dynamic)) -> #(Int, dynamic.Dynamic) {
   case find_result {
     Ok(value) -> #(200, wrap(value))
-    Error(reason) ->
-      #(
-        404,
-        wrap(dict.from_list([
+    Error(reason) -> #(
+      404,
+      wrap(
+        dict.from_list([
           #(atom("ok"), dynamic.bool(False)),
           #(atom("error"), reason),
-        ])),
-      )
+        ]),
+      ),
+    )
   }
 }
 
 ///====================================================================
 /// The wire's edges
 ///====================================================================
-
 fn admin_port() -> Int {
   case app_env.get_env(atom(app_name), atom("admin_port"), dynamic.int(8488)) {
     port ->

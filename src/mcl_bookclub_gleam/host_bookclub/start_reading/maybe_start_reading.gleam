@@ -8,20 +8,24 @@
 
 import gleam/dict
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 import mcl_bookclub_gleam/host_bookclub/reading_state
 import mcl_bookclub_gleam/host_bookclub/start_reading/reading_started_v1
 import mcl_bookclub_gleam/host_bookclub/start_reading/start_reading_v1
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// The Erlang module atoms of this desk's own modules -- evoq addresses
 /// the command by these.
 pub const command_module = "mcl_bookclub_gleam@host_bookclub@start_reading@start_reading_v1"
+
 pub const aggregate_module = "mcl_bookclub_gleam@host_bookclub@reading_aggregate"
 
 /// The command's payload as evoq hands it to the aggregate: the map
 /// start_reading_v1:to_map/1 made, atom-keyed.
-pub fn handle_from_map(state: reading_state.ReadingState, payload: Payload) -> desk.DeskResult {
+pub fn handle_from_map(
+  state: reading_state.ReadingState,
+  payload: Payload,
+) -> desk.DeskResult {
   case start_reading_v1.new(payload) {
     Ok(command) -> handle(state, command)
     Error(e) -> Error(e)
@@ -31,7 +35,10 @@ pub fn handle_from_map(state: reading_state.ReadingState, payload: Payload) -> d
 /// The business rule, stated against the aggregate state: a reading
 /// starts exactly once. The already-finished refusal is the aggregate's
 /// blanket guard, not this desk's.
-pub fn handle(state: reading_state.ReadingState, command: start_reading_v1.StartReading) -> desk.DeskResult {
+pub fn handle(
+  state: reading_state.ReadingState,
+  command: start_reading_v1.StartReading,
+) -> desk.DeskResult {
   case reading_state.is_in_progress(state) {
     True -> Error(desk.error_atom("already_started"))
     False ->
@@ -43,11 +50,24 @@ pub fn handle(state: reading_state.ReadingState, command: start_reading_v1.Start
 }
 
 fn events(command: start_reading_v1.StartReading) -> desk.DeskResult {
-  case reading_started_v1.new(dict.from_list([
-    #(atom("reading_id"), dynamic.string(start_reading_v1.get_reading_id(command))),
-    #(atom("member_id"), dynamic.string(start_reading_v1.get_member_id(command))),
-    #(atom("book_id"), dynamic.string(start_reading_v1.get_book_id(command))),
-  ])) {
+  case
+    reading_started_v1.new(
+      dict.from_list([
+        #(
+          atom("reading_id"),
+          dynamic.string(start_reading_v1.get_reading_id(command)),
+        ),
+        #(
+          atom("member_id"),
+          dynamic.string(start_reading_v1.get_member_id(command)),
+        ),
+        #(
+          atom("book_id"),
+          dynamic.string(start_reading_v1.get_book_id(command)),
+        ),
+      ]),
+    )
+  {
     Ok(event) -> Ok([reading_started_v1.to_map(event)])
     Error(e) -> Error(e)
   }

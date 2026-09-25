@@ -11,15 +11,16 @@
 
 import gleam/dict
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
-import mcl_bookclub_gleam/host_bookclub/bookclub_state
-import mcl_bookclub_gleam/host_bookclub/archive_bookclub/bookclub_archived_v1
 import mcl_bookclub_gleam/host_bookclub/archive_bookclub/archive_bookclub_v1
+import mcl_bookclub_gleam/host_bookclub/archive_bookclub/bookclub_archived_v1
+import mcl_bookclub_gleam/host_bookclub/bookclub_state
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// The Erlang module atoms of this desk's own modules -- evoq addresses
 /// the command by these.
 pub const command_module = "mcl_bookclub_gleam@host_bookclub@archive_bookclub@archive_bookclub_v1"
+
 pub const aggregate_module = "mcl_bookclub_gleam@host_bookclub@bookclub_aggregate"
 
 /// The command's payload as evoq hands it to the aggregate: the map
@@ -59,16 +60,23 @@ fn events(
   state: bookclub_state.BookclubState,
   command: archive_bookclub_v1.ArchiveBookclub,
 ) -> desk.DeskResult {
-  case bookclub_archived_v1.new(dict.from_list([
-    #(atom("club_id"), dynamic.string(bookclub_state.club_id(state))),
-    #(atom("name"), dynamic.string(bookclub_state.name(state))),
-    #(atom("initiated_by"), dynamic.string(bookclub_state.initiated_by(state))),
-    #(atom("initiated_at"), dynamic.int(bookclub_state.initiated_at(state))),
-    #(
-      atom("archived_by"),
-      dynamic.string(archive_bookclub_v1.get_archived_by(command)),
-    ),
-  ])) {
+  case
+    bookclub_archived_v1.new(
+      dict.from_list([
+        #(atom("club_id"), dynamic.string(bookclub_state.club_id(state))),
+        #(atom("name"), dynamic.string(bookclub_state.name(state))),
+        #(
+          atom("initiated_by"),
+          dynamic.string(bookclub_state.initiated_by(state)),
+        ),
+        #(atom("initiated_at"), dynamic.int(bookclub_state.initiated_at(state))),
+        #(
+          atom("archived_by"),
+          dynamic.string(archive_bookclub_v1.get_archived_by(command)),
+        ),
+      ]),
+    )
+  {
     Ok(event) -> Ok([bookclub_archived_v1.to_map(event)])
     Error(e) -> Error(e)
   }
@@ -80,7 +88,9 @@ fn events(
 /// VALIDATION HAPPENS HERE, BEFORE DISPATCH, AND THAT IS LOAD-BEARING:
 /// the store client RAISES on a bad id, so the desk is the boundary -- it
 /// validates, then dispatches (Demon 67).
-pub fn dispatch(command: archive_bookclub_v1.ArchiveBookclub) -> desk.DispatchResult {
+pub fn dispatch(
+  command: archive_bookclub_v1.ArchiveBookclub,
+) -> desk.DispatchResult {
   case archive_bookclub_v1.validate(command) {
     Ok(_) ->
       desk.dispatch_command(

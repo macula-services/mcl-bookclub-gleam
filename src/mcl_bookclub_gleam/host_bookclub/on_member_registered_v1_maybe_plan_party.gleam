@@ -21,12 +21,12 @@
 
 import gleam/dict
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/evoq
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/log
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 import mcl_bookclub_gleam/host_bookclub/plan_party/maybe_plan_party
 import mcl_bookclub_gleam/host_bookclub/plan_party/plan_party_v1
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/evoq
+import mcl_bookclub_gleam/internal/log
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 const party_every = 5
 
@@ -68,9 +68,13 @@ pub fn handle_event(
 /// it, and the club's own stream is the authority on whether a party
 /// exists, not this handler.
 fn plan_party(club_id: String) -> Nil {
-  case plan_party_v1.new(dict.from_list([
-    #(atom("club_id"), dynamic.string(club_id)),
-  ])) {
+  case
+    plan_party_v1.new(
+      dict.from_list([
+        #(atom("club_id"), dynamic.string(club_id)),
+      ]),
+    )
+  {
     Ok(command) ->
       case maybe_plan_party.dispatch(command) {
         Ok(_) -> Nil
@@ -81,9 +85,11 @@ fn plan_party(club_id: String) -> Nil {
 }
 
 fn warn(club_id: String, reason: dynamic.Dynamic) -> Nil {
-  log.warning(dict.from_list([
-    #(atom("what"), atom("party_not_planned")),
-    #(atom("club_id"), dynamic.string(club_id)),
-    #(atom("reason"), reason),
-  ]))
+  log.warning(
+    dict.from_list([
+      #(atom("what"), atom("party_not_planned")),
+      #(atom("club_id"), dynamic.string(club_id)),
+      #(atom("reason"), reason),
+    ]),
+  )
 }

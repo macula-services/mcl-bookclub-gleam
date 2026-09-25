@@ -7,20 +7,24 @@
 
 import gleam/dict
 import gleam/dynamic
-import mcl_bookclub_gleam/internal/desk
-import mcl_bookclub_gleam/internal/payload.{atom, type Payload}
 import mcl_bookclub_gleam/host_bookclub/book_state
 import mcl_bookclub_gleam/host_bookclub/retire_book/book_retired_v1
 import mcl_bookclub_gleam/host_bookclub/retire_book/retire_book_v1
+import mcl_bookclub_gleam/internal/desk
+import mcl_bookclub_gleam/internal/payload.{type Payload, atom}
 
 /// The Erlang module atoms of this desk's own modules -- evoq addresses
 /// the command by these.
 pub const command_module = "mcl_bookclub_gleam@host_bookclub@retire_book@retire_book_v1"
+
 pub const aggregate_module = "mcl_bookclub_gleam@host_bookclub@book_aggregate"
 
 /// The command's payload as evoq hands it to the aggregate: the map
 /// retire_book_v1:to_map/1 made, atom-keyed.
-pub fn handle_from_map(state: book_state.BookState, payload: Payload) -> desk.DeskResult {
+pub fn handle_from_map(
+  state: book_state.BookState,
+  payload: Payload,
+) -> desk.DeskResult {
   case retire_book_v1.new(payload) {
     Ok(command) -> handle(state, command)
     Error(e) -> Error(e)
@@ -29,7 +33,10 @@ pub fn handle_from_map(state: book_state.BookState, payload: Payload) -> desk.De
 
 /// The business rule, stated against the aggregate state: a book can
 /// only retire once it is on the shelf.
-pub fn handle(state: book_state.BookState, command: retire_book_v1.RetireBook) -> desk.DeskResult {
+pub fn handle(
+  state: book_state.BookState,
+  command: retire_book_v1.RetireBook,
+) -> desk.DeskResult {
   case book_state.is_on_shelf(state) {
     True ->
       case retire_book_v1.validate(command) {
@@ -40,16 +47,26 @@ pub fn handle(state: book_state.BookState, command: retire_book_v1.RetireBook) -
   }
 }
 
-fn events(state: book_state.BookState, command: retire_book_v1.RetireBook) -> desk.DeskResult {
-  case book_retired_v1.new(dict.from_list([
-    #(atom("book_id"), dynamic.string(book_state.book_id(state))),
-    #(atom("club_id"), dynamic.string(book_state.club_id(state))),
-    #(atom("title"), dynamic.string(book_state.title(state))),
-    #(atom("author"), dynamic.string(book_state.author(state))),
-    #(atom("procured_at"), dynamic.int(book_state.procured_at(state))),
-    #(atom("club_name"), dynamic.string(book_state.club_name(state))),
-    #(atom("retired_by"), dynamic.string(retire_book_v1.get_retired_by(command))),
-  ])) {
+fn events(
+  state: book_state.BookState,
+  command: retire_book_v1.RetireBook,
+) -> desk.DeskResult {
+  case
+    book_retired_v1.new(
+      dict.from_list([
+        #(atom("book_id"), dynamic.string(book_state.book_id(state))),
+        #(atom("club_id"), dynamic.string(book_state.club_id(state))),
+        #(atom("title"), dynamic.string(book_state.title(state))),
+        #(atom("author"), dynamic.string(book_state.author(state))),
+        #(atom("procured_at"), dynamic.int(book_state.procured_at(state))),
+        #(atom("club_name"), dynamic.string(book_state.club_name(state))),
+        #(
+          atom("retired_by"),
+          dynamic.string(retire_book_v1.get_retired_by(command)),
+        ),
+      ]),
+    )
+  {
     Ok(event) -> Ok([book_retired_v1.to_map(event)])
     Error(e) -> Error(e)
   }

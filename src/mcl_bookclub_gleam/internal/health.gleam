@@ -30,7 +30,10 @@ pub fn safe_ping(
 
 /// The store's half: reply {Ref, Reply} to the ping's {Pid, Ref}.
 @external(erlang, "mcl_bookclub_gleam_ffi", "send_reply")
-pub fn send_reply(reply_to: #(process.Pid, dynamic.Dynamic), reply: dynamic.Dynamic) -> Nil
+pub fn send_reply(
+  reply_to: #(process.Pid, dynamic.Dynamic),
+  reply: dynamic.Dynamic,
+) -> Nil
 
 /// The ok atom the stores answer with.
 pub fn ok_reply() -> dynamic.Dynamic {
