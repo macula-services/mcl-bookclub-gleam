@@ -15,6 +15,11 @@ cd "$(dirname "$0")/.."
 rm -rf build/release-libs
 cp -r build/dev/erlang build/release-libs
 
+# gleam.toml's [dev_dependencies], by name: patch_app.escript drops them from
+# every .app so relx never pulls them into the release.
+DEV_DEPS=$(awk '/^\[/{dev = ($0 == "[dev_dependencies]")} dev && /^[a-z_]+ *=/{print $1}' gleam.toml | paste -sd, -)
+export DEV_DEPS
+
 # The test beams, gone from the release BEFORE the .app patch: the patch
 # unions every remaining beam into the modules list, and relx's embedded boot
 # script preloads exactly that list -- a listed-but-deleted beam is a
@@ -24,7 +29,7 @@ rm -f build/release-libs/mcl_bookclub_gleam/ebin/mcl_bookclub_gleam@test_support
 rm -f build/release-libs/mcl_bookclub_gleam/ebin/mcl_bookclub_gleam@@main.beam
 find build/release-libs/mcl_bookclub_gleam/ebin -name '*_test.beam' -delete
 
-# The releasable .app: mod entry in, gleeunit and the test modules out, and
+# The releasable .app: mod entry in, the dev dependencies and the test modules out, and
 # every beam in ebin unioned into the modules list. That union runs over
 # EVERY staged app: relx's embedded boot script preloads only listed
 # modules, and a package can ship a beam its own .app omits (gleam_otp
@@ -41,5 +46,19 @@ done
 rm -f build/release-libs/mcl_bookclub_gleam/priv
 cp -r priv build/release-libs/mcl_bookclub_gleam/
 
-# Assemble.
+# Assemble, into a fresh output dir: relx adds to an existing release's lib/
+# and never removes an app a previous assembly put there.
+rm -rf _build/release
 ERL_LIBS=build/dev/erlang rebar3 as prod release
+
+# A dev dependency (gleam.toml [dev_dependencies]: the test runner, the lint
+# engine) must never ship. Gleam lists them in the service's .app like any
+# dependency; patch_app.escript drops them, and this refuses a release that
+# still carries one.
+shipped=$(for dep in ${DEV_DEPS//,/ }; do
+    ls -d _build/release/mcl_bookclub_gleam/lib/"$dep"-* 2>/dev/null || true
+done)
+if [ -n "$shipped" ]; then
+    echo "release carries dev dependencies: $shipped" >&2
+    exit 1
+fi

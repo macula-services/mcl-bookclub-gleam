@@ -9,7 +9,8 @@
 %%     gleam_otp_external, which its static_supervisor calls -- undef at
 %%     boot otherwise).
 %%   - drop test modules (*_test, <app>@test_support, <app>@@main).
-%%   - drop the gleeunit dev dependency from applications.
+%%   - drop every dev dependency (DEV_DEPS, comma-separated, from gleam.toml's
+%%     [dev_dependencies]; release.sh sets it) from applications.
 %%   - with_mod: add {mod, {<app>@app, []}} -- the OTP entry (app.gleam) --
 %%     for the service app only.
 %%
@@ -33,7 +34,8 @@ main(Args) ->
     Modules = lists:usort(Beams1 ++ Listed),
 
     Apps0 = proplists:get_value(applications, Props, []),
-    Apps = [A || A <- Apps0, A =/= gleeunit],
+    DevDeps = [list_to_atom(D) || D <- string:lexemes(os:getenv("DEV_DEPS", ""), ",")],
+    Apps = Apps0 -- DevDeps,
 
     Props1 = lists:keystore(modules, 1, Props, {modules, Modules}),
     Props2 = lists:keystore(applications, 1, Props1, {applications, Apps}),
