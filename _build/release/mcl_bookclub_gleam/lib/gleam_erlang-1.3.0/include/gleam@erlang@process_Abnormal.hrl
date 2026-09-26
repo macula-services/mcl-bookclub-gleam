@@ -1,3 +1,0 @@
--record(abnormal, {
-    reason :: gleam@dynamic:dynamic_()
-}).

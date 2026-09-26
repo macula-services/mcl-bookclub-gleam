@@ -38,3 +38,7 @@ jsx = "3.1.0"
 
 [dev_dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
+# The lint gate's engine (scripts/lint.sh runs it directly). Declared here so
+# it is fetched and built like any dependency, never carried as committed
+# beams.
+elvis_core = "~> 6.0"

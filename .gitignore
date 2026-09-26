@@ -2,5 +2,10 @@ build/
 manifest.toml
 erl_crash.dump
 
+# rebar3 output (scripts/release.sh assembles the release under _build/) and
+# its lock: BEAM lock files are never committed; the constraints are the pin.
+/_build/
+rebar.lock
+
 # Test data directories written under the working directory.
 /data/

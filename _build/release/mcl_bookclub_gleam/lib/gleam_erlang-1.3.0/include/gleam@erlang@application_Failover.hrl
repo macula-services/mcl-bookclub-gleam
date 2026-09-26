@@ -1,3 +1,0 @@
--record(failover, {
-    previous :: gleam@erlang@node:node_()
-}).

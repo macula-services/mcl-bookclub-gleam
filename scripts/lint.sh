@@ -14,13 +14,15 @@
 # {config, [...]} invocation never consults git, so it lints the artefacts
 # deterministically in both dev and CI. The mcl_min ruleset definition and
 # the file globs still live in rebar.config -- one config, one gate.
+# elvis_core itself is a dev dependency in gleam.toml, so `gleam build`
+# fetches and compiles it under build/dev/erlang like any other.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 run() {
   set -e
   gleam build
-  exec erl -noshell -pa _build/default/plugins/*/ebin -eval '
+  exec erl -noshell -pa build/dev/erlang/elvis_core/ebin -pa build/dev/erlang/katana_code/ebin -eval '
     {ok, _} = application:ensure_all_started(elvis_core),
     {ok, Terms} = file:consult("rebar.config"),
     {elvis, ElvisConfig} = lists:keyfind(elvis, 1, Terms),
