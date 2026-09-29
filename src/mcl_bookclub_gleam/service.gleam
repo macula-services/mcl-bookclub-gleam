@@ -4,14 +4,13 @@
 //// is shared; the club is a payload parameter (club_id and club_name in
 //// every fact).
 ////
-//// The module also exports the two optional callbacks that turn the
-//// reckon-db store on: store_id/0 and data_dir/0. mcl_om:boot/1 resolves
-//// these callbacks BY NAME at startup, on a live node.
+//// The store is this service's own (internal/store, opened by app.gleam):
+//// this module deliberately exports NO store_id/0 or data_dir/0, a pair
+//// mcl_om 0.35 warns about at every boot.
 
 import gleam/dict
 import gleam/dynamic
 import mcl_bookclub_gleam/facade_supervisor
-import mcl_bookclub_gleam/internal/data_dir
 import mcl_bookclub_gleam/internal/health
 import mcl_bookclub_gleam/internal/payload.{type Payload, atom, wrap}
 import mcl_bookclub_gleam/project_bookclub/bookclub_read_model_store
@@ -113,21 +112,4 @@ pub fn identity_spec() -> Payload {
     ),
     #(atom("ttl_days"), dynamic.int(30)),
   ])
-}
-
-/// The reckon-db store this service owns. IT IS NAMED IN TWO PLACES, here
-/// and in the `evoq' block of config/sys.config.src, and nothing makes
-/// them agree by itself. A test compares the two (plus the desks' dispatch
-/// opts).
-pub fn store_id() -> dynamic.Dynamic {
-  atom("mcl_bookclub_store")
-}
-
-/// Where the record lives on disk: the reckon-db store at
-/// <data_dir>/mcl_bookclub_store and the sqlite read model at
-/// <data_dir>/bookclub.sqlite3. The path is a CHARLIST, not a binary: the
-/// dets/ra layer under reckon-db rejects a binary file option with
-/// {badarg, ...}.
-pub fn data_dir() -> dynamic.Dynamic {
-  data_dir.data_dir_charlist()
 }

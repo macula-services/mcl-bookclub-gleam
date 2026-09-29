@@ -20,6 +20,7 @@
 -export([wrap/1]).
 -export([logger_warning/1]).
 -export([bin_to_list/1]).
+-export([open_store/2]).
 -export([validate_stream_id/1]).
 -export([getenv/1]).
 -export([ensure_dir/1]).
@@ -207,15 +208,12 @@ test_set_evoq_env(StoreId) ->
                    {store_id, StoreId}]],
     {ok, nil}.
 
-%%% Start the store (single mode), the same call the facade's boot makes.
+%%% Start the store (single mode) with the same wiring app.gleam opens it
+%%% with (open_store/2, without the subscription the tests start themselves).
 %%% Idempotent across the suite: the tests share ONE store per VM, like the
 %%% twins' eunit setup; a later suite's start finds it already running.
 test_ensure_store(StoreId, DataDir) ->
-    case mcl_om_store:ensure_store(StoreId, DataDir, [], single) of
-        ok -> {ok, nil};
-        {error, {already_started, _}} -> {ok, nil};
-        {error, Reason} -> {error, Reason}
-    end.
+    gleam_result(store_started(StoreId, DataDir)).
 
 %%% The division apps only -- the twins' test env shape. Idempotent.
 test_start_division_apps() ->
@@ -268,3 +266,62 @@ source_file(Dir, Entry) ->
 %%% file:read_file/1, shaped for Gleam.
 file_read(Path) ->
     file:read_file(Path).
+
+%%% =========================================================================
+%%% The store, opened by app.gleam before mcl_om:boot/1 (mcl-om#10: mcl_om
+%%% opens no store from 0.35). This service's own copy of the canonical
+%%% wiring: start the store at <DataDir>/<StoreId>/, wait until reckon-db
+%%% lists it, start the per-store evoq subscription. Idempotent.
+%%% =========================================================================
+
+open_store(StoreId, DataDir) ->
+    gleam_result(subscribed(store_started(StoreId, DataDir), StoreId)).
+
+gleam_result(ok) -> {ok, nil};
+gleam_result({error, Reason}) -> {error, Reason}.
+
+subscribed(ok, StoreId) -> subscription(evoq_store_subscription:start_link(StoreId));
+subscribed({error, _} = Err, _StoreId) -> Err.
+
+store_started(StoreId, DataDir) ->
+    SubDir = filename:join(DataDir, atom_to_list(StoreId)),
+    ok = filelib:ensure_path(SubDir),
+    Config = #store_config{store_id = StoreId,
+                           data_dir = SubDir,
+                           mode = single,
+                           indexes = [],
+                           integrity = disabled,
+                           writer_pool_size = 5,
+                           reader_pool_size = 5,
+                           gateway_pool_size = 1,
+                           options = #{}},
+    store_start(reckon_db_sup:start_store(Config), StoreId).
+
+store_start({ok, _Pid}, StoreId) -> wait_loop(StoreId, erlang:monotonic_time(millisecond) + 30000);
+store_start({error, {already_started, _Pid}}, _StoreId) -> ok;
+store_start({error, Reason}, _StoreId) -> {error, {start_store_failed, Reason}}.
+
+wait_loop(StoreId, Deadline) ->
+    wait_ready(listed(StoreId), StoreId, Deadline).
+
+%%% try/catch on purpose: reckon_db_sup can refuse the call while reckon_db is
+%%% still starting, and that means "not listed yet", which the deadline covers.
+listed(StoreId) ->
+    try lists:member(StoreId, reckon_db_sup:which_stores())
+    catch _:_ -> false
+    end.
+
+wait_ready(true, _StoreId, _Deadline) ->
+    ok;
+wait_ready(false, StoreId, Deadline) ->
+    wait_retry(erlang:monotonic_time(millisecond) > Deadline, StoreId, Deadline).
+
+wait_retry(true, StoreId, _Deadline) ->
+    {error, {store_not_ready, StoreId}};
+wait_retry(false, StoreId, Deadline) ->
+    timer:sleep(100),
+    wait_loop(StoreId, Deadline).
+
+subscription({ok, _Pid}) -> ok;
+subscription({error, {already_started, _Pid}}) -> ok;
+subscription({error, Reason}) -> {error, {start_subscription_failed, Reason}}.
