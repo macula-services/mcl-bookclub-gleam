@@ -4,10 +4,11 @@ name: ci
 # image only after the test job passed. Pull requests run the tests only.
 #
 #   push to main : ghcr.io/macula-services/mcl-bookclub-gleam:main and :<sha>
-#   push of v*   : ghcr.io/macula-services/mcl-bookclub-gleam:<X.Y.Z>
+#   push of v*   : ghcr.io/macula-services/mcl-bookclub-gleam:<X.Y.Z> and :latest
 #
-# NO :latest. Boxes run a PINNED image (digest or semver) from macula-fleet and
-# roll it through the reconciler, canary first; nothing here moves a box.
+# ONLY A RELEASE MOVES :latest, the dev fleet's deploy channel: each box's reconciler
+# pulls it, verifies the digest it resolved to and runs that digest, so a green v* tag
+# is the deploy. A push to main deploys nothing.
 #
 # This org does not commit lock files (manifest.toml is git-ignored): the
 # `~>` floors in gleam.toml ARE the pin, and a rebuild picks up the newest
@@ -109,6 +110,7 @@ jobs:
             type=ref,event=branch,enable=${{ github.ref == 'refs/heads/main' }}
             type=sha,prefix=,format=long,enable=${{ github.ref == 'refs/heads/main' }}
             type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
           flavor: |
             latest=false
 
