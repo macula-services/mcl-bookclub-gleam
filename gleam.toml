@@ -22,9 +22,9 @@ gleam_otp = ">= 1.0.0 and < 2.0.0"
 gleam_erlang = ">= 1.0.0 and < 2.0.0"
 # The shared L2 substrate: mesh SDK, realm identity, capabilities, health. It
 # opens no store from 0.35 on (mcl-om#10): this service declares and opens its
-# own (internal/store). Bounded below 0.36 so no unreviewed minor floats in.
-# Verified on 0.34; 0.35 is gated against mcl_om main before it is tagged.
-mcl_om = ">= 0.34.0 and < 0.36.0"
+# own (internal/store). 0.37 brings macula 13.5 and the inbound guard pipeline
+# (mcl-om#14); floats within 0.x on released versions (dev rule).
+mcl_om = ">= 0.37.0 and < 1.0.0"
 # This service's own event store.
 reckon_db = "~> 5.4"
 # The CQRS/ES framework. 1.24: a restart's replayed events are marked
