@@ -31,6 +31,7 @@ KINDS = {
     "b-sys": ("#F5E9CC", "#A56F0A", "#3A2E13", "#E3AA3C"),   # in scope
     "b-per": ("#E3EBF2", "#3B5B7A", "#1D2A36", "#8EB4D8"),   # person
     "b-mac": ("#E6E4EE", "#5E5A78", "#26243A", "#A9A4C8"),   # Macula infrastructure
+    "b-lib": ("#E7F0E8", "#4A7A55", "#1A241C", "#8FBE9B"),   # library
     "b-ext": ("#ECEFED", "#8A9791", "#1C2421", "#7D8B85"),   # external system
     "b-cmp": ("#FFFFFF", "#8A9791", "#171F1C", "#7D8B85"),   # component or container
 }
@@ -75,7 +76,7 @@ DEFS = ('<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth=
         'orient="auto-start-reverse"><path class="arrowhead" d="M0 0L10 5L0 10z"/></marker></defs>')
 
 LEGEND = [("b-sys", "In scope"), ("b-per", "Person"), ("b-mac", "Macula infrastructure"),
-          ("b-ext", "External system"), ("b-cmp", "Container or component")]
+          ("b-lib", "Library"), ("b-ext", "External system"), ("b-cmp", "Container or component")]
 BOUNDARY = ("bound", "Boundary")
 
 
@@ -217,16 +218,16 @@ def components():
           ["used by internal/store, the store actors, the emitters and the admin: evoq's {ok, Version, Events},",
            "mcl_om's {ok, Pool, Realm}, esqlite's list-or-error, and the safe_ping that cannot crash its caller"], code=True)
     d.text("t-desc", 32, 818, "The libraries every department links:")
-    d.box("b-mac", 32, 832, 300, 136, "gleam_otp + gleam_erlang", "[>= 1.0.0, < 2.0.0]",
+    d.box("b-lib", 32, 832, 300, 136, "gleam_otp + gleam_erlang", "[>= 1.0.0, < 2.0.0]",
           ["actors for the two stores,", "static supervisors, and the",
            "subjects replies ride"], code=True)
-    d.box("b-mac", 352, 832, 300, 136, "mcl_om + macula", "[>= 0.37.0, < 1.0.0]",
+    d.box("b-lib", 352, 832, 300, 136, "mcl_om + macula", "[>= 0.37.0, < 1.0.0]",
           ["boot/1: node key, realm join,", "QUIC pool, capability, health;",
            "publish on a fact topic"], code=True)
-    d.box("b-mac", 672, 832, 300, 136, "reckon_db + evoq", "[~> 5.4, >= 1.26.1]",
+    d.box("b-lib", 672, 832, 300, 136, "reckon_db + evoq", "[~> 5.4, >= 1.26.1]",
           ["the event log and the CQRS", "framework, with reckon_evoq",
            ">= 2.7.2 as the adapter"], code=True)
-    d.box("b-mac", 992, 832, 300, 136, "esqlite + cowboy + jsx", "[~> 0.9, 2.12.0, 3.1.0]",
+    d.box("b-lib", 992, 832, 300, 136, "esqlite + cowboy + jsx", "[~> 0.9, 2.12.0, 3.1.0]",
           ["one sqlite file per store,", "the admin listener, and the",
            "JSON codec behind it"], code=True)
     # The wiring between the boxes.
