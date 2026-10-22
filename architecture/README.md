@@ -42,10 +42,10 @@ command, and every query is answered from the local read model.
 | `get_bookclub_by_id` | `macula_response` handler | `handle_request/2` reads `club_id` with `mcl_om_wire:field/2` and answers from the QRY desk; text goes back as CBOR text and booleans as 1/0 |
 | `project_bookclub` | PRJ division | `bookclub_read_model_store`: a `gleam_otp` actor owning one esqlite connection and the DDL. Eight projections, one `evoq_event_handler` each, one `INSERT OR REPLACE` per event, `replay_policy deliver` |
 | `host_bookclub` | CMD division | Nine desks and four aggregates; commands dispatch through `evoq_command_router` to the reckon-db store. `on_member_registered_v1_maybe_plan_party` is the one handler child the division supervises |
-| `query_bookclub` | QRY division | `bookclub_query_store`: a `gleam_otp` actor, read-only by API (`q/2` only), so a desk cannot write. Five pure desks answer with typed records; `Dynamic` never leaves the store module |
+| `query_bookclub` | QRY division | `bookclub_query_store`: a `gleam_otp` actor, read-only by API (`q/2` only), so a desk cannot write. Five pure desks answer with typed records, each converting the `Dynamic` cells `q/2` returns to typed fields |
 | `mcl_bookclub_gleam_ffi.erl` | Erlang, the edge Gleam cannot type | Used by `internal/store`, the store actors, the emitters and the admin: evoq's `{ok, Version, Events}`, `mcl_om`'s `{ok, Pool, Realm}`, esqlite's list-or-error, and `safe_ping/2` |
 | `gleam_otp` + `gleam_erlang` | libraries, `>= 1.0.0, < 2.0.0` | Actors for the two stores, static supervisors, and the subjects replies ride |
-| `mcl_om` + `macula` | libraries, `>= 0.37.0, < 1.0.0` | `boot/1`: node key, realm join, QUIC pool, capability registration, health; publish on a fact topic |
+| `mcl_om` + `macula` | libraries, `>= 0.37.0, < 1.0.0` for `mcl_om`; `macula` comes in through it, 13.5 at that floor | `boot/1`: node key, realm join, QUIC pool, capability registration, health; publish on a fact topic |
 | `reckon_db` + `evoq` | libraries, `~> 5.4` and `>= 1.26.1` | The event log and the CQRS framework, with `reckon_evoq` `>= 2.7.2` as the adapter evoq reads the log through |
 | `esqlite` + `cowboy` + `jsx` | libraries, `~> 0.9`, `2.12.0`, `3.1.0` | One sqlite file per store, the admin listener, and the JSON codec behind it |
 | `MCL_DATA_DIR` | environment | Read by `internal/data_dir` for both stores. `/var/lib/mcl-bookclub-gleam` in the image; the club store and `bookclub.sqlite3` live under it |

@@ -211,8 +211,8 @@ def components():
           ["bookclub_query_store: a gleam_otp actor,",
            "read-only by API, q/2 only, so a desk",
            "cannot write. Five pure desks answer",
-           "with typed records; Dynamic never",
-           "leaves the store module"], code=True)
+           "with typed records, converting the",
+           "Dynamic cells q/2 returns to fields"], code=True)
     # The Erlang edge, then the libraries.
     d.box("b-cmp", 32, 680, 1260, 104, "mcl_bookclub_gleam_ffi.erl", "[Erlang, the edge Gleam cannot type]",
           ["used by internal/store, the store actors, the emitters and the admin: evoq's {ok, Version, Events},",
@@ -221,9 +221,9 @@ def components():
     d.box("b-lib", 32, 832, 300, 136, "gleam_otp + gleam_erlang", "[>= 1.0.0, < 2.0.0]",
           ["actors for the two stores,", "static supervisors, and the",
            "subjects replies ride"], code=True)
-    d.box("b-lib", 352, 832, 300, 136, "mcl_om + macula", "[>= 0.37.0, < 1.0.0]",
+    d.box("b-lib", 352, 832, 300, 136, "mcl_om + macula", "[mcl_om >= 0.37.0, < 1.0.0]",
           ["boot/1: node key, realm join,", "QUIC pool, capability, health;",
-           "publish on a fact topic"], code=True)
+           "publish on a fact topic. macula", "13.5 comes in through mcl_om"], code=True)
     d.box("b-lib", 672, 832, 300, 136, "reckon_db + evoq", "[~> 5.4, >= 1.26.1]",
           ["the event log and the CQRS", "framework, with reckon_evoq",
            ">= 2.7.2 as the adapter"], code=True)

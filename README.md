@@ -91,7 +91,8 @@ appears in exactly three places, and each is a deliberate boundary:
 2. **The sqlite cell.** Rows are lists of cells; SQL NULL is the atom
    `undefined`. The QRY desks coerce each cell to a typed field
    (`desk.cell_string`, `desk.cell_int`, `desk.cell_int_option`) and return
-   typed records — `Dynamic` never leaves the store module.
+   typed records, so `Dynamic` stops at the desk and reaches neither a
+   facade nor the wire.
 3. **The wire.** `mcl_om_wire:field/2` and `facts.to_wire` read and write
    wire-shaped terms; the facade converts between the typed desks and the
    wire in one place per capability.
