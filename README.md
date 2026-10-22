@@ -9,7 +9,7 @@ distinguishable on the wire only by node identity. This is the workspace's
 **first Gleam edge service**.
 
 A book club kept as a reckon-db event store, with projections into sqlite, on
-the macula mesh through `mcl_om` (0.29 floor — the serving-station spread the
+the macula mesh through `mcl_om` (0.37 floor, the serving-station spread the
 many-club model needs; mcl-om#5).
 
 ## The department layout
