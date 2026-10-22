@@ -124,10 +124,9 @@
 <rect class="b-lib" x="352" y="832" width="300" height="136" rx="10"/>
 <text class="t-code" x="368" y="860">mcl_om + macula</text>
 <text class="t-type" x="368" y="878">[mcl_om &gt;= 0.37.0, &lt; 1.0.0]</text>
-<text class="t-desc" x="368" y="902">boot/1: node key, realm join,</text>
-<text class="t-desc" x="368" y="918">QUIC pool, capability, health;</text>
-<text class="t-desc" x="368" y="934">publish on a fact topic. macula</text>
-<text class="t-desc" x="368" y="950">13.5 comes in through mcl_om</text>
+<text class="t-desc" x="368" y="902">boot/1: node key, realm join;</text>
+<text class="t-desc" x="368" y="918">QUIC pool, health, adverts;</text>
+<text class="t-desc" x="368" y="934">publish on a fact topic</text>
 <rect class="b-lib" x="672" y="832" width="300" height="136" rx="10"/>
 <text class="t-code" x="688" y="860">reckon_db + evoq</text>
 <text class="t-type" x="688" y="878">[~&gt; 5.4, &gt;= 1.26.1]</text>

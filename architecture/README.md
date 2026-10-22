@@ -7,8 +7,10 @@ made of, without reading it.*
 departments: a facade (the mesh contract, the handler, the emitters, the admin UI),
 a CMD division with nine desks, four aggregates and the party policy, a PRJ division
 projecting eight events into one sqlite read model, and a QRY division answering
-from it. One procedure is advertised, `mcl-bookclub/get_bookclub_by_id`; the LAN
-admin UI runs on 8490; `/health` on 8455.
+from it. `mcl-bookclub/get_bookclub_by_id` is its own procedure, and the only one;
+`mcl-om` adds `mcl-bookclub/info` and `mcl-bookclub/get_limits` to every service,
+both open, and `capabilities/0` is the list. The LAN admin UI runs on 8490;
+`/health` on 8455.
 
 ## Level 1: system context
 
@@ -18,10 +20,10 @@ admin UI runs on 8490; `/health` on 8455.
 | --- | --- | --- |
 | mcl-bookclub-gleam | In scope | One Gleam OTP app with four departments. Serves `mcl-bookclub/get_bookclub_by_id` on the mesh, the admin UI on 8490, and `/health` on 8455 |
 | Club operator | Person | Runs the club from the LAN admin UI: initiates and archives clubs, registers and unregisters members, procures and retires books, starts and finishes readings, plans parties |
-| Mesh consumer | Person | Another service or app on the mesh: calls the one advertised procedure and subscribes to the three fact topics |
+| Mesh consumer | Person | Another service or app on the mesh: calls `mcl-bookclub/get_bookclub_by_id` and subscribes to the three fact topics |
 | Host disk | External system | The club store and the sqlite read model under `/var/lib/mcl-bookclub-gleam`, and the node identity key under `/etc/mcl/secrets`. A recreate without the volumes forgets both the record and the node id |
 | macula-realm | Macula infrastructure | Endorses the node's identity key and grants the scope `mcl-bookclub`: one action and three fact topics |
-| Macula stations, mesh DHT | Macula infrastructure | The pinned stations are the service's mesh entry points over QUIC; the DHT holds the advertised procedure and carries the fact topics |
+| Macula stations, mesh DHT | Macula infrastructure | The pinned stations are the service's mesh entry points over QUIC; the DHT holds the adverts for its own procedure and for the `info` and `get_limits` mcl-om adds, and carries the fact topics |
 
 Same org, topics and procedure names as the Erlang and Phoenix bookclubs, so a
 peer cannot tell the three apart. Only `member_registered_v1`, `book_procured_v1`
@@ -45,7 +47,7 @@ command, and every query is answered from the local read model.
 | `query_bookclub` | QRY division | `bookclub_query_store`: a `gleam_otp` actor, read-only by API (`q/2` only), so a desk cannot write. Five pure desks answer with typed records, each converting the `Dynamic` cells `q/2` returns to typed fields |
 | `mcl_bookclub_gleam_ffi.erl` | Erlang, the edge Gleam cannot type | Used by `internal/store`, the store actors, the emitters and the admin: evoq's `{ok, Version, Events}`, `mcl_om`'s `{ok, Pool, Realm}`, esqlite's list-or-error, and `safe_ping/2` |
 | `gleam_otp` + `gleam_erlang` | libraries, `>= 1.0.0, < 2.0.0` | Actors for the two stores, static supervisors, and the subjects replies ride |
-| `mcl_om` + `macula` | libraries, `>= 0.37.0, < 1.0.0` for `mcl_om`; `macula` comes in through it, 13.5 at that floor | `boot/1`: node key, realm join, QUIC pool, capability registration, health; publish on a fact topic |
+| `mcl_om` + `macula` | libraries, `>= 0.37.0, < 1.0.0` for `mcl_om`; `macula` comes in through it. The floor is `mcl_om` 0.37.0, which needs `~> 13.3`; no `manifest.toml` is committed, so a build resolves the newest `mcl_om` below 1.0.0 (0.42.0 today), which needs `~> 14.11` | `boot/1`: node key, realm join, QUIC pool, adverts, health; publish on a fact topic |
 | `reckon_db` + `evoq` | libraries, `~> 5.4` and `>= 1.26.1` | The event log and the CQRS framework, with `reckon_evoq` `>= 2.7.2` as the adapter evoq reads the log through |
 | `esqlite` + `cowboy` + `jsx` | libraries, `~> 0.9`, `2.12.0`, `3.1.0` | One sqlite file per store, the admin listener, and the JSON codec behind it |
 | `MCL_DATA_DIR` | environment | Read by `internal/data_dir` for both stores. `/var/lib/mcl-bookclub-gleam` in the image; the club store and `bookclub.sqlite3` live under it |

@@ -149,8 +149,8 @@ def context():
           ["Endorses the node's identity key", "and grants the scope mcl-bookclub:",
            "one action, three fact topics"])
     d.box("b-mac", 690, 400, 270, 120, "Macula stations, mesh DHT", "[Macula infrastructure]",
-          ["Pinned stations are the mesh entry", "(QUIC); the DHT holds the advertised",
-           "procedure and carries the facts"])
+          ["Pinned stations are the mesh entry", "(QUIC); the DHT holds the",
+           "adverts, and carries the facts"])
     d.edge("M175 150V176H400V186")
     d.text("t-rel", 183, 170, "commands on 8490, and reads")
     d.edge("M825 150V176H620V186")
@@ -159,8 +159,18 @@ def context():
     d.edge("M620 338V368H825V400"); d.text("t-rel", 632, 360, "advertises, publishes 3 facts")
     d.edge("M365 300H340V460H310")
     d.text("t-rel", 330, 340, "keeps the log and the read model", anchor="middle", rotate=-90)
-    d.text("t-desc", 40, 566, "Same org, topics and procedure names as the Erlang and Phoenix bookclubs: a peer cannot tell the")
-    d.text("t-desc", 40, 584, "three apart. Only the three facts leave; the mesh never sees a command, and every query is answered locally.")
+    d.text(
+        "t-desc",
+        40,
+        566,
+        "Same org, topics and procedure names as the Erlang and Phoenix bookclubs: a peer cannot tell the",
+    )
+    d.text(
+        "t-desc",
+        40,
+        584,
+        "three apart. Only the three facts leave; the mesh never sees a command, and every query is answered locally.",
+    )
     d.legend(630, boundary=False)
     d.write()
 
@@ -222,8 +232,9 @@ def components():
           ["actors for the two stores,", "static supervisors, and the",
            "subjects replies ride"], code=True)
     d.box("b-lib", 352, 832, 300, 136, "mcl_om + macula", "[mcl_om >= 0.37.0, < 1.0.0]",
-          ["boot/1: node key, realm join,", "QUIC pool, capability, health;",
-           "publish on a fact topic. macula", "13.5 comes in through mcl_om"], code=True)
+          ["boot/1: node key, realm join;",
+           "QUIC pool, health, adverts;",
+           "publish on a fact topic"], code=True)
     d.box("b-lib", 672, 832, 300, 136, "reckon_db + evoq", "[~> 5.4, >= 1.26.1]",
           ["the event log and the CQRS", "framework, with reckon_evoq",
            ">= 2.7.2 as the adapter"], code=True)

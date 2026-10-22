@@ -95,7 +95,7 @@ appears in exactly three places, and each is a deliberate boundary:
    facade nor the wire.
 3. **The wire.** `mcl_om_wire:field/2` and `facts.to_wire` read and write
    wire-shaped terms; the facade converts between the typed desks and the
-   wire in one place per capability.
+   wire in the handler for each procedure.
 
 The alternative — modeling heterogeneous Erlang terms as Gleam types —
 would be a facade over a facade; the corpus's "no wrapper" convention says

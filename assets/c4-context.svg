@@ -84,8 +84,8 @@
 <text class="t-name" x="706" y="428">Macula stations, mesh DHT</text>
 <text class="t-type" x="706" y="446">[Macula infrastructure]</text>
 <text class="t-desc" x="706" y="470">Pinned stations are the mesh entry</text>
-<text class="t-desc" x="706" y="486">(QUIC); the DHT holds the advertised</text>
-<text class="t-desc" x="706" y="502">procedure and carries the facts</text>
+<text class="t-desc" x="706" y="486">(QUIC); the DHT holds the</text>
+<text class="t-desc" x="706" y="502">adverts, and carries the facts</text>
 <path class="edge" d="M175 150V176H400V186" marker-end="url(#a)"/>
 <text class="t-rel" x="183" y="170">commands on 8490, and reads</text>
 <path class="edge" d="M825 150V176H620V186" marker-end="url(#a)"/>
