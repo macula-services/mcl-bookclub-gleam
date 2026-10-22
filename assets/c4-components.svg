@@ -163,7 +163,7 @@
 <text class="t-desc" x="668" y="1094">UI is the box's LAN tool. MCL_HEALTH_PORT is 8455</text>
 <rect class="b-ext" x="32" y="1136" width="1260" height="104" rx="10"/>
 <text class="t-code" x="48" y="1164">MCL_REALM, MCL_REALM_KEY, MCL_IDENTITY_KEY_PATH</text>
-<text class="t-type" x="48" y="1182">[environment, config/sys.config.src, substituted by relx at boot]</text>
+<text class="t-type" x="48" y="1182">[environment, config/sys.config.src, read at boot]</text>
 <text class="t-desc" x="48" y="1206">the realm and its trust anchor, and the node key's path on the secrets volume;</text>
 <text class="t-desc" x="48" y="1222">the key must survive restarts, because a peer pins this node's id</text>
 <text class="t-desc" x="32" y="1274">config/sys.config.src fixes the org mcl-bookclub, the PQ crypto profile pq_hybrid, and the evoq block naming</text>
