@@ -63,7 +63,7 @@
 <text class="t-name" x="381" y="214">mcl-bookclub-gleam</text>
 <text class="t-type" x="381" y="232">[mcl_om mesh service, own box]</text>
 <text class="t-desc" x="381" y="256">One Gleam OTP app, four</text>
-<text class="t-desc" x="381" y="272">departments. Serves one procedure</text>
+<text class="t-desc" x="381" y="272">departments. One procedure of its own</text>
 <text class="t-desc" x="381" y="288">on the mesh, the LAN admin UI</text>
 <text class="t-desc" x="381" y="304">on 8490, and /health on 8455</text>
 <rect class="b-ext" x="40" y="400" width="270" height="120" rx="10"/>

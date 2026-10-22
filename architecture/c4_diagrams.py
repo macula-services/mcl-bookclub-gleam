@@ -139,7 +139,7 @@ def context():
           ["Calls mcl-bookclub/", "get_bookclub_by_id and subscribes",
            "to the fact topics"], person=True)
     d.box("b-sys", 365, 186, 270, 152, "mcl-bookclub-gleam", "[mcl_om mesh service, own box]",
-          ["One Gleam OTP app, four", "departments. Serves one procedure",
+          ["One Gleam OTP app, four", "departments. One procedure of its own",
            "on the mesh, the LAN admin UI", "on 8490, and /health on 8455"])
     d.box("b-ext", 40, 400, 270, 120, "Host disk", "[External system]",
           ["The club store and sqlite read", "model under /var/lib, the node",
