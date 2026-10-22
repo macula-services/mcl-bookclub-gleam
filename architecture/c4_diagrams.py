@@ -245,7 +245,7 @@ def components():
           ["the cowboy listener binds every interface: the admin",
            "UI is the box's LAN tool. MCL_HEALTH_PORT is 8455"], code=True)
     d.box("b-ext", 32, 1136, 1260, 104, "MCL_REALM, MCL_REALM_KEY, MCL_IDENTITY_KEY_PATH",
-          "[environment, config/sys.config.src, substituted by relx at boot]",
+          "[environment, config/sys.config.src, read at boot]",
           ["the realm and its trust anchor, and the node key's path on the secrets volume;",
            "the key must survive restarts, because a peer pins this node's id"], code=True)
     d.text("t-desc", 32, 1274, "config/sys.config.src fixes the org mcl-bookclub, the PQ crypto profile pq_hybrid, and the evoq block naming")
