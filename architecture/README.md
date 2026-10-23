@@ -20,9 +20,9 @@ both open, and `capabilities/0` is the list. The LAN admin UI runs on 8490;
 | --- | --- | --- |
 | mcl-bookclub-gleam | In scope | One Gleam OTP app with four departments. Serves `mcl-bookclub/get_bookclub_by_id` on the mesh, the admin UI on 8490, and `/health` on 8455 |
 | Club operator | Person | Runs the club from the LAN admin UI: initiates and archives clubs, registers and unregisters members, procures and retires books, starts and finishes readings, plans parties |
-| Mesh consumer | Person | Another service or app on the mesh: calls `mcl-bookclub/get_bookclub_by_id` and subscribes to the three fact topics |
+| Mesh consumer | Person | Another service or app on the mesh: calls `mcl-bookclub/get_bookclub_by_id` and subscribes to its fact topics |
 | Host disk | External system | The club store and the sqlite read model under `/var/lib/mcl-bookclub-gleam`, and the node identity key under `/etc/mcl/secrets`. A recreate without the volumes forgets both the record and the node id |
-| macula-realm | Macula infrastructure | Endorses the node's identity key and grants the scope `mcl-bookclub`: one action and three fact topics |
+| macula-realm | Macula infrastructure | Endorses the node's identity key and grants the scope `mcl-bookclub` for its action and its fact topics |
 | Macula stations, mesh DHT | Macula infrastructure | The pinned stations are the service's mesh entry points over QUIC; the DHT holds the adverts for its own procedure and for the `info` and `get_limits` mcl-om adds, and carries the fact topics |
 
 Same org, topics and procedure names as the Erlang and Phoenix bookclubs, so a

@@ -64,9 +64,9 @@
 <rect class="b-sys" x="952" y="76" width="340" height="136" rx="10"/>
 <text class="t-code" x="968" y="104">service</text>
 <text class="t-type" x="968" y="122">[the mcl_om_service contract]</text>
-<text class="t-desc" x="968" y="146">info, start, stop, health, capabilities,</text>
-<text class="t-desc" x="968" y="162">identity_spec; health pings both store</text>
-<text class="t-desc" x="968" y="178">actors through the FFI's safe_ping</text>
+<text class="t-desc" x="968" y="146">The six mcl_om_service callbacks, plus</text>
+<text class="t-desc" x="968" y="162">mcl-om's open info and get_limits; health</text>
+<text class="t-desc" x="968" y="178">pings both store actors via the FFI</text>
 <rect class="b-cmp" x="32" y="272" width="340" height="136" rx="10"/>
 <text class="t-code" x="48" y="300">internal/store</text>
 <text class="t-type" x="48" y="318">[the FFI's open_store/2]</text>

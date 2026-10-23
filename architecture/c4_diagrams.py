@@ -146,8 +146,8 @@ def context():
           ["The club store and sqlite read", "model under /var/lib, the node",
            "key under /etc/mcl/secrets"])
     d.box("b-mac", 365, 400, 270, 120, "macula-realm", "[Macula infrastructure]",
-          ["Endorses the node's identity key", "and grants the scope mcl-bookclub:",
-           "one action, three fact topics"])
+          ["Endorses the node's identity key", "and grants the scope mcl-bookclub",
+           "for its action and its fact topics"])
     d.box("b-mac", 690, 400, 270, 120, "Macula stations, mesh DHT", "[Macula infrastructure]",
           ["Pinned stations are the mesh entry", "(QUIC); the DHT holds the",
            "adverts, and carries the facts"])
@@ -188,9 +188,9 @@ def components():
            "then mcl_om:boot/1 with the service module;",
            "a store that cannot open stops the boot"], code=True)
     d.box("b-sys", 952, 76, 340, 136, "service", "[the mcl_om_service contract]",
-          ["info, start, stop, health, capabilities,",
-           "identity_spec; health pings both store",
-           "actors through the FFI's safe_ping"], code=True)
+          ["The six mcl_om_service callbacks, plus",
+           "mcl-om's open info and get_limits; health",
+           "pings both store actors via the FFI"], code=True)
     # Row 2: the store, the facade tree, the mesh handler.
     d.box("b-cmp", 32, 272, 340, 136, "internal/store", "[the FFI's open_store/2]",
           ["start_store, wait until reckon_db lists it,",
