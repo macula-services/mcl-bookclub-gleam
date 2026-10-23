@@ -139,6 +139,15 @@ A local release boot against the real mesh:
 `scripts/local_boot.sh` (health on `MCL_HEALTH_PORT`, admin UI on
 `MCL_ADMIN_PORT`).
 
+## Architecture
+
+The C4 model is in [architecture/README.md](architecture/README.md), with its
+diagrams drawn by `architecture/c4_diagrams.py` into `assets/`. Change the
+script, run it (`python3 architecture/c4_diagrams.py`), and look at the result
+before committing.
+
+![mcl-bookclub-gleam system context](assets/c4-context.svg)
+
 ## License
 
 Apache 2.0.
