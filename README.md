@@ -9,7 +9,7 @@ distinguishable on the wire only by node identity. This is the workspace's
 **first Gleam edge service**.
 
 A book club kept as a reckon-db event store, with projections into sqlite, on
-the macula mesh through `mcl_om` (0.29 floor — the serving-station spread the
+the macula mesh through `mcl_om` (0.37 floor, the serving-station spread the
 many-club model needs; mcl-om#5).
 
 ## The department layout
@@ -70,7 +70,7 @@ the `skip`-policy emitters.
 
 - **Org**: `mcl-bookclub`. **Capability**: `get_bookclub_by_id`
   (`mcl-bookclub/get_bookclub_by_id`, `auth => open`).
-- **Three fact topics**, one per fact kind, ids and names in the payload:
+- **The fact topics**, one per fact kind, ids and names in the payload:
   `bookclub/member/member_registered_v1`,
   `bookclub/book/book_procured_v1`,
   `bookclub/book/book_retired_v1`.
@@ -91,10 +91,11 @@ appears in exactly three places, and each is a deliberate boundary:
 2. **The sqlite cell.** Rows are lists of cells; SQL NULL is the atom
    `undefined`. The QRY desks coerce each cell to a typed field
    (`desk.cell_string`, `desk.cell_int`, `desk.cell_int_option`) and return
-   typed records — `Dynamic` never leaves the store module.
+   typed records, so `Dynamic` stops at the desk and reaches neither a
+   facade nor the wire.
 3. **The wire.** `mcl_om_wire:field/2` and `facts.to_wire` read and write
    wire-shaped terms; the facade converts between the typed desks and the
-   wire in one place per capability.
+   wire in the handler it installs for a desk.
 
 The alternative — modeling heterogeneous Erlang terms as Gleam types —
 would be a facade over a facade; the corpus's "no wrapper" convention says
@@ -128,11 +129,11 @@ model, the facade contract tests, and the boundary tests.
 ## Release and deploy
 
 `Containerfile` + `.github/workflows/ci.yml` mirror the twins: gates in the
-pinned `macula-ci-gleam` image, then the image build (`:main` and `:<sha>`,
-never `:latest`), digest-pinned in `macula-fleet` and rolled by the
-reconciler. The realm grant for `mcl-bookclub/get_bookclub_by_id` + `info` is
-issued by the operator; until then the node boots healthy and advertise fails
-with `{provider_authorization, ...}` — the honest pre-grant state.
+pinned `macula-ci-gleam` image, then the image, published as `:main` and
+`:<sha>` only. The realm grant is issued per org procedure, mcl-om's open
+`info` and `get_limits` among them; until it is, advertisement is refused with
+`{provider_authorization, ...}` and the node boots healthy, which is the honest
+pre-grant state.
 
 A local release boot against the real mesh:
 `scripts/local_boot.sh` (health on `MCL_HEALTH_PORT`, admin UI on

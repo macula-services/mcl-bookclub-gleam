@@ -24,12 +24,14 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+      - 'assets/**'
       - 'LICENSE'
   pull_request:
     branches: [main]
     paths-ignore:
       - '**.md'
       - 'docs/**'
+      - 'assets/**'
       - 'LICENSE'
   workflow_dispatch:
 

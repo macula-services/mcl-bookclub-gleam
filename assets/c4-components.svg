@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1340 1360" role="img" aria-label="mcl-bookclub-gleam components">
+<title>mcl-bookclub-gleam components</title>
+<style>
+.t-name { font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 700; }
+.t-desc { font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif; font-size: 12.5px; }
+.t-rel { font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif; font-size: 11.5px; paint-order: stroke; stroke-width: 4px; stroke-linejoin: round; }
+.t-code { font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 13px; font-weight: 600; }
+.t-type { font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; }
+.t-bound { font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; font-weight: 600; }
+.t-leg { font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif; font-size: 12px; }
+.edge { fill: none; stroke-width: 1.25; }
+.edge-later { fill: none; stroke-width: 1.25; stroke-dasharray: 5 4; }
+.bg { fill: #FFFFFF; }
+.b-sys { fill: #F5E9CC; stroke: #A56F0A; stroke-width: 2; }
+.b-per { fill: #E3EBF2; stroke: #3B5B7A; stroke-width: 1.25; }
+.b-mac { fill: #E6E4EE; stroke: #5E5A78; stroke-width: 1.25; }
+.b-lib { fill: #E7F0E8; stroke: #4A7A55; stroke-width: 1.25; }
+.b-ext { fill: #ECEFED; stroke: #8A9791; stroke-width: 1.25; }
+.b-cmp { fill: #FFFFFF; stroke: #8A9791; stroke-width: 1.25; }
+.b-later { fill: none; stroke: #8A9791; stroke-width: 1.25; stroke-dasharray: 5 4; }
+.bound { fill: none; stroke: #B3BDB8; stroke-width: 1; }
+.head { fill: #3B5B7A; }
+.t-name, .t-code { fill: #16201D; }
+.t-type, .t-bound, .t-leg { fill: #66736E; }
+.t-desc { fill: #34413C; }
+.t-rel { fill: #66736E; stroke: #FFFFFF; }
+.edge, .edge-later { stroke: #8A9791; }
+.arrowhead { fill: #8A9791; }
+@media (prefers-color-scheme: dark) {
+.bg { fill: #171F1C; }
+.b-sys { fill: #3A2E13; stroke: #E3AA3C; }
+.b-per { fill: #1D2A36; stroke: #8EB4D8; }
+.b-mac { fill: #26243A; stroke: #A9A4C8; }
+.b-lib { fill: #1A241C; stroke: #8FBE9B; }
+.b-ext { fill: #1C2421; stroke: #7D8B85; }
+.b-cmp { fill: #171F1C; stroke: #7D8B85; }
+.b-later { stroke: #7D8B85; }
+.bound { stroke: #4A5752; }
+.head { fill: #8EB4D8; }
+.t-name, .t-code { fill: #E6ECE9; }
+.t-type, .t-bound, .t-leg { fill: #93A09A; }
+.t-desc { fill: #C3CDC8; }
+.t-rel { fill: #93A09A; stroke: #171F1C; }
+.edge, .edge-later { stroke: #7D8B85; }
+.arrowhead { fill: #7D8B85; }
+}
+</style>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M0 0L10 5L0 10z"/></marker></defs>
+<rect class="bg" x="0" y="0" width="1340" height="1360"/>
+<rect class="bound" x="16" y="40" width="1292" height="940" rx="12"/>
+<text class="t-bound" x="32" y="62">mcl-bookclub-gleam [Container] - one Gleam OTP app, four departments</text>
+<rect class="b-cmp" x="32" y="76" width="340" height="136" rx="10"/>
+<text class="t-code" x="48" y="104">root_supervisor</text>
+<text class="t-type" x="48" y="122">[gleam_otp static supervisor]</text>
+<text class="t-desc" x="48" y="146">Starts the three division supervisors,</text>
+<text class="t-desc" x="48" y="162">before mcl_om:boot/1, so the catch-up</text>
+<text class="t-desc" x="48" y="178">replay finds every projection registered</text>
+<rect class="b-cmp" x="492" y="76" width="340" height="136" rx="10"/>
+<text class="t-code" x="508" y="104">app</text>
+<text class="t-type" x="508" y="122">[OTP application start callback]</text>
+<text class="t-desc" x="508" y="146">root_supervisor, then internal/store:open,</text>
+<text class="t-desc" x="508" y="162">then mcl_om:boot/1 with the service module;</text>
+<text class="t-desc" x="508" y="178">a store that cannot open stops the boot</text>
+<rect class="b-sys" x="952" y="76" width="340" height="136" rx="10"/>
+<text class="t-code" x="968" y="104">service</text>
+<text class="t-type" x="968" y="122">[the mcl_om_service contract]</text>
+<text class="t-desc" x="968" y="146">The six mcl_om_service callbacks, plus</text>
+<text class="t-desc" x="968" y="162">mcl-om's open info and get_limits; health</text>
+<text class="t-desc" x="968" y="178">pings both store actors via the FFI</text>
+<rect class="b-cmp" x="32" y="272" width="340" height="136" rx="10"/>
+<text class="t-code" x="48" y="300">internal/store</text>
+<text class="t-type" x="48" y="318">[the FFI's open_store/2]</text>
+<text class="t-desc" x="48" y="342">start_store, wait until reckon_db lists it,</text>
+<text class="t-desc" x="48" y="358">then the per-store evoq subscription; the</text>
+<text class="t-desc" x="48" y="374">id and the charlist dir come from data_dir</text>
+<rect class="b-cmp" x="492" y="272" width="340" height="136" rx="10"/>
+<text class="t-code" x="508" y="300">facade_supervisor</text>
+<text class="t-type" x="508" y="318">[gleam_otp static supervisor]</text>
+<text class="t-desc" x="508" y="342">The admin listener and the three</text>
+<text class="t-desc" x="508" y="358">emit_*_to_mesh handlers; started by</text>
+<text class="t-desc" x="508" y="374">service:start/1, after boot's replay</text>
+<rect class="b-sys" x="952" y="272" width="340" height="136" rx="10"/>
+<text class="t-code" x="968" y="300">get_bookclub_by_id</text>
+<text class="t-type" x="968" y="318">[macula_response handler]</text>
+<text class="t-desc" x="968" y="342">handle_request/2 reads club_id with</text>
+<text class="t-desc" x="968" y="358">mcl_om_wire:field/2, answers from the QRY</text>
+<text class="t-desc" x="968" y="374">desk; text back as CBOR text, bools 1/0</text>
+<rect class="b-cmp" x="32" y="468" width="340" height="180" rx="10"/>
+<text class="t-code" x="48" y="496">project_bookclub</text>
+<text class="t-type" x="48" y="514">[PRJ division]</text>
+<text class="t-desc" x="48" y="538">bookclub_read_model_store: a gleam_otp</text>
+<text class="t-desc" x="48" y="554">actor owning one esqlite connection and</text>
+<text class="t-desc" x="48" y="570">the DDL; eight projections, one</text>
+<text class="t-desc" x="48" y="586">evoq_event_handler each, INSERT OR</text>
+<text class="t-desc" x="48" y="602">REPLACE per event, replay_policy deliver</text>
+<rect class="b-cmp" x="492" y="468" width="340" height="180" rx="10"/>
+<text class="t-code" x="508" y="496">host_bookclub</text>
+<text class="t-type" x="508" y="514">[CMD division]</text>
+<text class="t-desc" x="508" y="538">Nine desks and four aggregates; commands</text>
+<text class="t-desc" x="508" y="554">dispatch through evoq_command_router to</text>
+<text class="t-desc" x="508" y="570">the reckon-db store, and the</text>
+<text class="t-desc" x="508" y="586">on_member_registered_v1_maybe_plan_party</text>
+<text class="t-desc" x="508" y="602">policy is the one handler child here</text>
+<rect class="b-cmp" x="952" y="468" width="340" height="180" rx="10"/>
+<text class="t-code" x="968" y="496">query_bookclub</text>
+<text class="t-type" x="968" y="514">[QRY division]</text>
+<text class="t-desc" x="968" y="538">bookclub_query_store: a gleam_otp actor,</text>
+<text class="t-desc" x="968" y="554">read-only by API, q/2 only, so a desk</text>
+<text class="t-desc" x="968" y="570">cannot write. Five pure desks answer</text>
+<text class="t-desc" x="968" y="586">with typed records, converting the</text>
+<text class="t-desc" x="968" y="602">Dynamic cells q/2 returns to fields</text>
+<rect class="b-cmp" x="32" y="680" width="1260" height="104" rx="10"/>
+<text class="t-code" x="48" y="708">mcl_bookclub_gleam_ffi.erl</text>
+<text class="t-type" x="48" y="726">[Erlang, the edge Gleam cannot type]</text>
+<text class="t-desc" x="48" y="750">used by internal/store, the store actors, the emitters and the admin: evoq's {ok, Version, Events},</text>
+<text class="t-desc" x="48" y="766">mcl_om's {ok, Pool, Realm}, esqlite's list-or-error, and the safe_ping that cannot crash its caller</text>
+<text class="t-desc" x="32" y="818">The libraries every department links:</text>
+<rect class="b-lib" x="32" y="832" width="300" height="136" rx="10"/>
+<text class="t-code" x="48" y="860">gleam_otp + gleam_erlang</text>
+<text class="t-type" x="48" y="878">[&gt;= 1.0.0, &lt; 2.0.0]</text>
+<text class="t-desc" x="48" y="902">actors for the two stores,</text>
+<text class="t-desc" x="48" y="918">static supervisors, and the</text>
+<text class="t-desc" x="48" y="934">subjects replies ride</text>
+<rect class="b-lib" x="352" y="832" width="300" height="136" rx="10"/>
+<text class="t-code" x="368" y="860">mcl_om + macula</text>
+<text class="t-type" x="368" y="878">[mcl_om &gt;= 0.37.0, &lt; 1.0.0]</text>
+<text class="t-desc" x="368" y="902">boot/1: node key, realm join;</text>
+<text class="t-desc" x="368" y="918">QUIC pool, health, adverts;</text>
+<text class="t-desc" x="368" y="934">publish on a fact topic</text>
+<rect class="b-lib" x="672" y="832" width="300" height="136" rx="10"/>
+<text class="t-code" x="688" y="860">reckon_db + evoq</text>
+<text class="t-type" x="688" y="878">[~&gt; 5.4, &gt;= 1.26.1]</text>
+<text class="t-desc" x="688" y="902">the event log and the CQRS</text>
+<text class="t-desc" x="688" y="918">framework, with reckon_evoq</text>
+<text class="t-desc" x="688" y="934">&gt;= 2.7.2 as the adapter</text>
+<rect class="b-lib" x="992" y="832" width="300" height="136" rx="10"/>
+<text class="t-code" x="1008" y="860">esqlite + cowboy + jsx</text>
+<text class="t-type" x="1008" y="878">[~&gt; 0.9, 2.12.0, 3.1.0]</text>
+<text class="t-desc" x="1008" y="902">one sqlite file per store,</text>
+<text class="t-desc" x="1008" y="918">the admin listener, and the</text>
+<text class="t-desc" x="1008" y="934">JSON codec behind it</text>
+<path class="edge" d="M492 160H372" marker-end="url(#a)"/>
+<text class="t-rel" x="432" y="152" text-anchor="middle">starts, then boots</text>
+<path class="edge" d="M832 200H952" marker-end="url(#a)"/>
+<text class="t-rel" x="892" y="192" text-anchor="middle">mcl_om:boot/1</text>
+<path class="edge" d="M560 212V240H250V272" marker-end="url(#a)"/>
+<text class="t-rel" x="300" y="232">opens it, then boot</text>
+<path class="edge" d="M1112 212V272" marker-end="url(#a)"/>
+<text class="t-rel" x="1120" y="246">capabilities/0 names it</text>
+<path class="edge" d="M212 408V468" marker-end="url(#a)"/>
+<text class="t-rel" x="220" y="442">delivers every event</text>
+<path class="edge" d="M632 408V468" marker-end="url(#a)"/>
+<text class="t-rel" x="640" y="442">admin writes, emitters publish</text>
+<path class="edge" d="M1112 408V468" marker-end="url(#a)"/>
+<text class="t-rel" x="1120" y="442">answers from the desk</text>
+<rect class="b-ext" x="32" y="1008" width="600" height="104" rx="10"/>
+<text class="t-code" x="48" y="1036">MCL_DATA_DIR</text>
+<text class="t-type" x="48" y="1054">[environment, /var/lib/mcl-bookclub-gleam]</text>
+<text class="t-desc" x="48" y="1078">read by internal/data_dir for both stores; the club</text>
+<text class="t-desc" x="48" y="1094">store and the sqlite read model live under it</text>
+<rect class="b-ext" x="652" y="1008" width="640" height="104" rx="10"/>
+<text class="t-code" x="668" y="1036">MCL_ADMIN_PORT</text>
+<text class="t-type" x="668" y="1054">[environment, 8490 for now]</text>
+<text class="t-desc" x="668" y="1078">the cowboy listener binds every interface: the admin</text>
+<text class="t-desc" x="668" y="1094">UI is the box's LAN tool. MCL_HEALTH_PORT is 8455</text>
+<rect class="b-ext" x="32" y="1136" width="1260" height="104" rx="10"/>
+<text class="t-code" x="48" y="1164">MCL_REALM, MCL_REALM_KEY, MCL_IDENTITY_KEY_PATH</text>
+<text class="t-type" x="48" y="1182">[environment, config/sys.config.src, read at boot]</text>
+<text class="t-desc" x="48" y="1206">the realm and its trust anchor, and the node key's path on the secrets volume;</text>
+<text class="t-desc" x="48" y="1222">the key must survive restarts, because a peer pins this node's id</text>
+<text class="t-desc" x="32" y="1274">config/sys.config.src fixes the org mcl-bookclub, the PQ crypto profile pq_hybrid, and the evoq block naming</text>
+<text class="t-desc" x="32" y="1292">mcl_bookclub_store; without that block the subscription crashes on {not_configured, event_store_adapter}.</text>
+<text class="t-desc" x="32" y="1310">PRJ writes the one sqlite file and QRY reads it; a schema-contract test pins the columns one selects to the other's DDL.</text>
+<rect class="b-sys" x="24" y="1336" width="22" height="14" rx="3"/>
+<text class="t-leg" x="54" y="1348">In scope</text>
+<rect class="b-per" x="110.8" y="1336" width="22" height="14" rx="3"/>
+<text class="t-leg" x="140.8" y="1348">Person</text>
+<rect class="b-mac" x="184.39999999999998" y="1336" width="22" height="14" rx="3"/>
+<text class="t-leg" x="214.39999999999998" y="1348">Macula infrastructure</text>
+<rect class="b-lib" x="357.0" y="1336" width="22" height="14" rx="3"/>
+<text class="t-leg" x="387.0" y="1348">Library</text>
+<rect class="b-ext" x="437.2" y="1336" width="22" height="14" rx="3"/>
+<text class="t-leg" x="467.2" y="1348">External system</text>
+<rect class="b-cmp" x="570.2" y="1336" width="22" height="14" rx="3"/>
+<text class="t-leg" x="600.2" y="1348">Container or component</text>
+<rect class="bound" x="749.4000000000001" y="1336" width="22" height="14" rx="3"/>
+<text class="t-leg" x="779.4000000000001" y="1348">Boundary</text>
+</svg>

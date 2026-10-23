@@ -10,7 +10,11 @@ cd "$(dirname "$0")/.."
 
 export RELX_REPLACE_OS_VARS=true
 export MCL_REALM=abb81b5a614b63551b400b810648c0c8a78efad845442630c94b46cc95d2fcd1
-export MCL_REALM_KEY="$(grep '^MCL_REALM_KEY=' /home/rl/work/github.com/macula-io/macula-fleet/edge/beam03.lab/mcl-bookclub-config.env | cut -d= -f2)"
+# The realm key is public fleet config: point FLEET_ENV at the box's
+# mcl-bookclub-config.env in your own macula-fleet checkout. It is the only
+# thing a reader has to set, and it names no machine of its own.
+FLEET_ENV="${FLEET_ENV:?set FLEET_ENV to a mcl-bookclub-config.env in a macula-fleet checkout}"
+export MCL_REALM_KEY="$(grep '^MCL_REALM_KEY=' "$FLEET_ENV" | cut -d= -f2)"
 export MACULA_STATION_SEEDS=station-de-falkenstein.macula.io:4433,station-fi-helsinki.macula.io:4433,station-de-frankfurt.macula.io:4433
 export MACULA_STATION_NODE_IDS=00df68247d119685f94030afdb203ab7a2a105fb6093a964dbf0509a57e86435,004d1f470097ccf8826ce291900e882fdb1f20375e53901facaec0f23eb4efd8,00cd0008ec2e72b6572b7bf6fc8b048d7fe83993faf1fc544370f2bc1eb71f85
 export MCL_COOKIE=mcl_bookclub_gleam
